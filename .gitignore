@@ -1,0 +1,23 @@
+# Local agent and editor state
+.codex/
+.openai/
+.idea/
+.vscode/
+
+# Local backups and browser test profiles
+backups/
+work/
+
+# WeChat Developer Tools machine-specific settings
+project.private.config.json
+
+# Dependencies, environment files, and logs
+node_modules/
+.env
+.env.*
+*.log
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+Desktop.ini

@@ -1,0 +1,117 @@
+<view class="page today-page">
+  <view class="date-head">
+    <view class="eyebrow">修善断恶 · 命自我立</view>
+    <view class="date-title">{{dateTitle}}</view>
+    <view class="date-subtitle">{{weekday}} · 夜省</view>
+    <view class="status-pill {{today.completed ? 'done' : ''}}">
+      <view class="status-dot"></view>
+      <text>{{today.completed ? '今日已登记' : '今日尚未登记'}}</text>
+    </view>
+  </view>
+
+  <view wx:if="{{hasVow}}" class="vow-card">
+    <view class="vow-card-top">
+      <view>
+        <view class="vow-label">{{vow.complete ? '最近善愿' : '当前善愿'}}</view>
+        <view class="vow-name">{{vow.name}}</view>
+      </view>
+      <view class="vow-count">
+        <text class="vow-count-number">{{vow.current}}</text>
+        <text class="vow-count-label">累计功数</text>
+      </view>
+    </view>
+    <view class="progress"><view class="progress-value" style="width: {{vow.percent}}%;"></view></view>
+    <view class="progress-meta">
+      <text>始于 {{vow.startText}}</text>
+      <text>{{vow.complete ? '已满愿' : '距满愿还差 ' + vow.remaining + ' 功'}}</text>
+    </view>
+  </view>
+
+  <view wx:else class="vow-card vow-empty-card">
+    <view class="vow-label">当前善愿</view>
+    <view class="vow-name">尚未立愿</view>
+    <view class="vow-empty-text">先立一愿，再以每日功过勉励自己。</view>
+    <button class="outline-button vow-empty-action" bindtap="goToVows">前往立愿</button>
+  </view>
+
+  <button class="primary-button reflection-action" hover-class="button-hover" bindtap="startReflection">{{today.completed ? '今日自省' : '开始今日自省'}}</button>
+
+  <view class="section-head">
+    <text class="section-title">今日结算</text>
+    <text class="section-note">善则记数，恶则退除</text>
+  </view>
+  <view class="summary">
+    <view class="summary-item">
+      <text class="summary-number positive">{{today.good}}</text>
+      <text class="summary-label">功数</text>
+    </view>
+    <view class="summary-item">
+      <text class="summary-number negative">{{today.fault}}</text>
+      <text class="summary-label">过数</text>
+    </view>
+    <view class="summary-item">
+      <text class="summary-number {{today.netClass}}">{{today.netText}}</text>
+      <text class="summary-label">净数</text>
+    </view>
+  </view>
+
+  <view class="quote">
+    <text>“务要日日知非，日日改过。”</text>
+    <text class="quote-source">——《了凡四训》</text>
+  </view>
+</view>
+
+<view wx:if="{{reflectionVisible}}" class="overlay" catchtap="closeReflection">
+  <scroll-view class="sheet reflection-sheet" scroll-y catchtap="noop">
+    <view class="sheet-handle"></view>
+    <view class="sheet-head">
+      <view>
+        <view class="sheet-title">今日功过</view>
+        <view class="sheet-desc">{{dateTitle}} · 夜省</view>
+      </view>
+    </view>
+
+    <form bindsubmit="submitReflection">
+      <view class="entry-section">
+        <view class="entry-head"><text>今日之功</text><text>功数</text></view>
+        <view class="entry-list">
+          <view wx:for="{{draft.goods}}" wx:key="_key" class="entry-item">
+            <input class="entry-text" value="{{item.text}}" maxlength="100" placeholder="记一件实际善行" data-kind="goods" data-index="{{index}}" bindinput="onEntryTextInput" />
+            <picker class="entry-picker" mode="selector" range="{{pointOptions}}" value="{{item.points > 0 ? item.points - 1 : 0}}" disabled="{{item.points < 1}}" data-kind="goods" data-index="{{index}}" bindchange="onEntryPointsChange">
+              <view class="entry-picker-control {{item.points < 1 ? 'disabled' : ''}}">
+                <text class="picker-value">{{item.points}}</text>
+                <text class="picker-arrow">⌄</text>
+              </view>
+            </picker>
+            <button class="remove-button" data-kind="goods" data-index="{{index}}" catchtap="removeEntry">×</button>
+          </view>
+        </view>
+        <button class="add-button" data-kind="goods" catchtap="addEntry">＋ 再记一功</button>
+      </view>
+
+      <view class="entry-section">
+        <view class="entry-head"><text>今日之过</text><text>过数</text></view>
+        <view class="entry-list">
+          <view wx:for="{{draft.faults}}" wx:key="_key" class="entry-item">
+            <input class="entry-text" value="{{item.text}}" maxlength="100" placeholder="如实记下过失" data-kind="faults" data-index="{{index}}" bindinput="onEntryTextInput" />
+            <picker class="entry-picker" mode="selector" range="{{pointOptions}}" value="{{item.points > 0 ? item.points - 1 : 0}}" disabled="{{item.points < 1}}" data-kind="faults" data-index="{{index}}" bindchange="onEntryPointsChange">
+              <view class="entry-picker-control {{item.points < 1 ? 'disabled' : ''}}">
+                <text class="picker-value">{{item.points}}</text>
+                <text class="picker-arrow">⌄</text>
+              </view>
+            </picker>
+            <button class="remove-button" data-kind="faults" data-index="{{index}}" catchtap="removeEntry">×</button>
+          </view>
+        </view>
+        <button class="add-button" data-kind="faults" catchtap="addEntry">＋ 再记一过</button>
+      </view>
+
+      <view class="settlement">
+        <view><text>{{draftSummary.good}}</text><text>功数</text></view>
+        <view><text>{{draftSummary.fault}}</text><text>过数</text></view>
+        <view><text>{{draftSummary.netText}}</text><text>净数</text></view>
+      </view>
+      <button class="primary-button submit-reflection" form-type="submit" hover-class="button-hover">完成今日登记</button>
+    </form>
+  </scroll-view>
+</view>

@@ -1,0 +1,111 @@
+<view class="page vows-page">
+  <view class="page-head">
+    <view class="page-title">善愿</view>
+    <view class="page-desc">一愿既立，日日勉行。</view>
+  </view>
+
+  <button wx:if="{{!hasActiveVow}}" class="primary-button new-vow-action" hover-class="button-hover" bindtap="openNewVow">{{vows.length ? '立下下一愿' : '立下第一愿'}}</button>
+
+  <view wx:if="{{vows.length}}" class="vow-list">
+    <view wx:for="{{vows}}" wx:key="id" class="vow-detail {{item.complete ? 'completed' : ''}}">
+      <view class="vow-detail-head" data-id="{{item.id}}" data-complete="{{item.complete}}" bindtap="toggleVow">
+        <view class="vow-heading">
+          <text class="vow-status {{item.complete ? 'complete' : ''}}">{{item.status}}</text>
+          <text class="vow-title">{{item.name}}</text>
+          <text class="vow-date">{{item.startText}}立愿</text>
+          <text wx:if="{{item.completedText}}" class="vow-date">{{item.completedText}}满愿</text>
+        </view>
+        <view wx:if="{{item.complete}}" class="reward-side">
+          <text class="completion-reward">圆</text>
+          <text class="fold-label">{{item.expanded ? '收起详情' : '展开详情'}}</text>
+        </view>
+      </view>
+
+      <view wx:if="{{!item.complete || item.expanded}}" class="vow-body">
+        <view class="vow-progress"><view style="width: {{item.percent}}%;"></view></view>
+        <view class="vow-grid">
+          <view class="vow-stat"><text>目标善数</text><text>{{item.target}}</text></view>
+          <view class="vow-stat"><text>已积善数</text><text>{{item.current}}</text></view>
+          <view class="vow-stat"><text>累计过数</text><text>{{item.faults}}</text></view>
+          <view class="vow-stat"><text>{{item.complete ? '满愿状态' : '距满愿还差'}}</text><text>{{item.complete ? '圆满' : item.remaining + ' 功'}}</text></view>
+        </view>
+        <view class="vow-reason">{{item.reason || '愿心已立，日日勉行。'}}</view>
+        <view wx:if="{{!item.complete}}" class="vow-actions">
+          <button wx:if="{{!item.active}}" class="outline-button" data-id="{{item.id}}" catchtap="activateVow">设为当前</button>
+          <button class="outline-button" data-id="{{item.id}}" catchtap="openEditVow">调整善愿</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:else class="empty-state vow-empty">
+    <text>尚未立愿。立一件可实行的善愿，从今日开始逐日记录。</text>
+  </view>
+
+  <view class="section-head"><text class="section-title">记格之法</text></view>
+  <view class="principles">
+    <view class="principle"><text class="principle-index">一</text><view><text class="principle-title">逐日登记</text><text class="principle-desc">每日所行善恶，务求如实。</text></view></view>
+    <view class="principle"><text class="principle-index">二</text><view><text class="principle-title">善记功数</text><text class="principle-desc">善行计入愿行累计。</text></view></view>
+    <view class="principle"><text class="principle-index">三</text><view><text class="principle-title">恶退功数</text><text class="principle-desc">过失从累计中如数退除。</text></view></view>
+  </view>
+
+  <view class="privacy-card">
+    <text class="privacy-title">本机数据</text>
+    <text class="privacy-desc">所有功过与善愿只保存在当前设备，不上传服务器。卸载小程序或清除缓存后可能无法恢复。</text>
+    <button class="clear-button" bindtap="confirmClearData">清空本机记录</button>
+  </view>
+</view>
+
+<view wx:if="{{formVisible}}" class="overlay" catchtap="closeVowForm">
+  <scroll-view class="sheet vow-form-sheet" scroll-y catchtap="noop">
+    <view class="sheet-handle"></view>
+    <view class="sheet-head">
+      <view>
+        <view class="sheet-title">{{formTitle}}</view>
+        <view class="sheet-desc">立一善愿，日日勉行。</view>
+      </view>
+    </view>
+
+    <form bindsubmit="submitVow">
+      <view class="form-label-row">
+        <text class="form-label">善愿名称</text>
+      </view>
+      <view class="combo-field {{tierMenuField == 'name' ? 'open' : ''}}">
+        <view wx:if="{{!customTier}}" class="form-input combo-input combo-control" data-field="name" catchtap="showTierMenu">
+          <text class="{{form.name ? 'combo-value' : 'combo-placeholder'}}">{{form.name || '点击选择'}}</text>
+          <text class="combo-arrow">⌄</text>
+        </view>
+        <input wx:else class="form-input combo-input" value="{{form.name}}" maxlength="20" placeholder="请输入" focus="{{nameFocus}}" data-field="name" bindblur="onCustomInputBlur" bindinput="onNameInput" />
+        <view wx:if="{{!customTier && tierMenuField == 'name'}}" class="dropdown-menu">
+          <view wx:for="{{vowTierOptions}}" wx:key="target" class="dropdown-option" data-index="{{index}}" data-field="name" catchtap="chooseVowTier">
+            <text>{{item.name}}</text><text>{{item.target}} 善</text>
+          </view>
+          <view class="dropdown-option custom" data-custom="true" data-field="name" catchtap="chooseVowTier"><text>自定义输入</text><text>自行填写名称与目标</text></view>
+        </view>
+      </view>
+
+      <view class="form-label-row">
+        <text class="form-label">目标善数</text>
+      </view>
+      <view class="combo-field {{tierMenuField == 'target' ? 'open' : ''}}">
+        <view wx:if="{{!customTier}}" class="form-input combo-input combo-control" data-field="target" catchtap="showTierMenu">
+          <text class="{{form.target ? 'combo-value' : 'combo-placeholder'}}">{{form.target || '点击选择'}}</text>
+          <text class="combo-arrow">⌄</text>
+        </view>
+        <input wx:else class="form-input combo-input" type="number" value="{{form.target}}" placeholder="请输入" focus="{{targetFocus}}" data-field="target" bindblur="onCustomInputBlur" bindinput="onTargetInput" />
+        <view wx:if="{{!customTier && tierMenuField == 'target'}}" class="dropdown-menu">
+          <view wx:for="{{vowTierOptions}}" wx:key="target" class="dropdown-option" data-index="{{index}}" data-field="target" catchtap="chooseVowTier">
+            <text>{{item.target}} 善</text><text>{{item.name}}</text>
+          </view>
+          <view class="dropdown-option custom" data-custom="true" data-field="target" catchtap="chooseVowTier"><text>自定义输入</text><text>自行填写名称与目标</text></view>
+        </view>
+      </view>
+
+      <view class="form-label-row">
+        <text class="form-label">立愿缘起</text>
+      </view>
+      <textarea class="form-textarea" value="{{form.reason}}" maxlength="120" placeholder="{{reasonPlaceholder}}" bindfocus="closeTierMenu" bindinput="onReasonInput"></textarea>
+      <button class="primary-button vow-submit" form-type="submit" hover-class="button-hover">{{editingVowId ? '保存善愿' : '立下善愿'}}</button>
+    </form>
+  </scroll-view>
+</view>

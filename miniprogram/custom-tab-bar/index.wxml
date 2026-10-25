@@ -1,0 +1,18 @@
+<view wx:if="{{!hidden}}" class="tabbar-shell">
+  <view class="tabbar-rule"></view>
+  <view class="tabbar-inner">
+    <view
+      wx:for="{{tabs}}"
+      wx:key="pagePath"
+      class="tabbar-item {{selected === index ? 'is-selected' : ''}}"
+      data-index="{{index}}"
+      bindtap="switchTab"
+      hover-class="tabbar-item-hover"
+      hover-stay-time="100"
+    >
+      <view class="tabbar-seal"><text>{{item.seal}}</text></view>
+      <text class="tabbar-label">{{item.text}}</text>
+      <view class="tabbar-indicator"></view>
+    </view>
+  </view>
+</view>

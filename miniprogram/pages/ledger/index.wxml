@@ -1,0 +1,91 @@
+<view class="page ledger-page">
+  <view class="page-head">
+    <view class="page-title">功过簿</view>
+    <view class="page-desc">按日省察，按月回望。</view>
+  </view>
+
+  <view class="ledger-tabs">
+    <button class="ledger-tab {{mode === 'month' ? 'active' : ''}}" data-mode="month" bindtap="changeMode">本月</button>
+    <button class="ledger-tab {{mode === 'year' ? 'active' : ''}}" data-mode="year" bindtap="changeMode">全年</button>
+  </view>
+
+  <view wx:if="{{mode === 'month'}}" class="ledger-panel">
+    <view class="calendar-toolbar">
+      <button class="toolbar-button" bindtap="previousMonth">上月</button>
+      <view class="toolbar-title">{{year}}年{{month + 1}}月</view>
+      <button class="toolbar-button" bindtap="nextMonth">下月</button>
+    </view>
+    <view class="month-summary">
+      <text>本月净数</text>
+      <text class="month-net {{monthSummary.netClass}}">{{monthSummary.netText}}</text>
+      <text class="month-count">已登记 {{monthSummary.count}} 日</text>
+    </view>
+    <view class="weekdays">
+      <text wx:for="{{weekdays}}" wx:key="*this">{{item}}</text>
+    </view>
+    <view class="calendar-grid">
+      <view wx:for="{{calendarCells}}" wx:key="key" class="calendar-cell {{item.blank ? 'blank' : ''}} {{item.today ? 'today' : ''}} {{item.hasEntry ? 'has-entry' : ''}}" data-date="{{item.date}}" data-entry="{{item.hasEntry}}" bindtap="openDayDetail">
+        <block wx:if="{{!item.blank}}">
+          <text class="day-number">{{item.day}}</text>
+          <text class="day-net {{item.netClass}}">{{item.netText}}</text>
+        </block>
+      </view>
+    </view>
+    <view class="legend">
+      <text><text class="legend-dot good"></text>净功</text>
+      <text><text class="legend-dot fault"></text>净过</text>
+      <text><text class="legend-dot even"></text>持平</text>
+      <text><text class="legend-dot empty"></text>未登记</text>
+    </view>
+  </view>
+
+  <view wx:else class="ledger-panel">
+    <view class="calendar-toolbar">
+      <button class="toolbar-button" bindtap="previousYear">上年</button>
+      <view class="toolbar-title">{{year}}年</view>
+      <button class="toolbar-button" bindtap="nextYear">下年</button>
+    </view>
+    <view class="year-grid">
+      <button wx:for="{{yearMonths}}" wx:key="month" class="year-month {{item.current ? 'current' : ''}}" data-month="{{item.month}}" bindtap="selectYearMonth">
+        <text class="year-month-name">{{item.month + 1}}月</text>
+        <text class="year-month-net {{item.netClass}}">{{item.netText}}</text>
+        <text class="year-month-count">{{item.count ? '已登记 ' + item.count + ' 日' : '未登记'}}</text>
+      </button>
+    </view>
+    <view class="legend">
+      <text><text class="legend-dot good"></text>净功</text>
+      <text><text class="legend-dot fault"></text>净过</text>
+      <text><text class="legend-dot even"></text>持平</text>
+      <text><text class="legend-dot empty"></text>未登记</text>
+    </view>
+  </view>
+</view>
+
+<view wx:if="{{detailVisible}}" class="overlay" catchtap="closeDayDetail">
+  <scroll-view class="sheet detail-sheet" scroll-y catchtap="noop">
+    <view class="sheet-handle"></view>
+    <view class="sheet-head">
+      <view>
+        <view class="sheet-title">{{detail.title}}</view>
+        <view class="sheet-desc">功 {{detail.good}} · 过 {{detail.fault}} · 净 {{detail.netText}}</view>
+      </view>
+      <button class="close-button" catchtap="closeDayDetail">×</button>
+    </view>
+
+    <view class="section-head"><text class="section-title">今日之功</text></view>
+    <view wx:if="{{detail.goods.length}}" class="detail-list">
+      <view wx:for="{{detail.goods}}" wx:key="_key" class="detail-item">
+        <text>{{item.text}}</text><text>{{item.points}} 功</text>
+      </view>
+    </view>
+    <view wx:else class="detail-empty">无功可记</view>
+
+    <view class="section-head"><text class="section-title">今日之过</text></view>
+    <view wx:if="{{detail.faults.length}}" class="detail-list">
+      <view wx:for="{{detail.faults}}" wx:key="_key" class="detail-item">
+        <text>{{item.text}}</text><text>{{item.points}} 过</text>
+      </view>
+    </view>
+    <view wx:else class="detail-empty">无过可记</view>
+  </scroll-view>
+</view>

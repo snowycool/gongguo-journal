@@ -1,0 +1,350 @@
+.new-vow-action {
+  margin-top: 28rpx;
+}
+
+.vow-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  margin-top: 28rpx;
+}
+
+.vow-detail {
+  padding: 34rpx;
+  border: 1rpx solid #dcd9d2;
+  border-radius: 8rpx;
+  background: #fdfcf9;
+}
+
+.vow-detail.completed {
+  border-color: #dec8ae;
+  background: #fbf7f1;
+}
+
+.vow-detail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.vow-heading {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.vow-status {
+  display: flex;
+  align-items: center;
+  color: #4f7466;
+  font-size: 23rpx;
+  letter-spacing: 3rpx;
+}
+
+.vow-status::before {
+  width: 10rpx;
+  height: 10rpx;
+  margin-right: 10rpx;
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
+}
+
+.vow-status.complete {
+  color: #9a713d;
+}
+
+.vow-title {
+  margin-top: 7rpx;
+  font-size: 40rpx;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.vow-date {
+  color: #8a857d;
+  font-size: 23rpx;
+  line-height: 1.5;
+}
+
+.reward-side {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.completion-reward {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 82rpx;
+  height: 82rpx;
+  border: 2rpx solid #e39a5b;
+  border-radius: 50%;
+  color: #c97b3c;
+  background: #fffaf4;
+  font-size: 34rpx;
+  font-weight: 600;
+}
+
+.fold-label {
+  color: #8a857d;
+  font-size: 21rpx;
+}
+
+.vow-body {
+  margin-top: 30rpx;
+}
+
+.vow-progress {
+  height: 8rpx;
+  background: #e9e6df;
+}
+
+.vow-progress view {
+  height: 100%;
+  background: #e39a5b;
+}
+
+.vow-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14rpx;
+  margin-top: 26rpx;
+}
+
+.vow-stat {
+  width: calc(50% - 7rpx);
+  padding: 22rpx;
+  border: 1rpx solid #e5e2dc;
+  border-radius: 6rpx;
+  background: #f7f5f0;
+}
+
+.vow-stat text {
+  display: block;
+}
+
+.vow-stat text:first-child {
+  color: #8a857d;
+  font-size: 23rpx;
+}
+
+.vow-stat text:last-child {
+  margin-top: 4rpx;
+  font-family: Georgia, serif;
+  font-size: 36rpx;
+  font-weight: 600;
+}
+
+.vow-reason {
+  margin-top: 28rpx;
+  padding-top: 24rpx;
+  border-top: 1rpx solid #e3e0da;
+  color: #4e4b46;
+}
+
+.vow-actions {
+  display: flex;
+  gap: 14rpx;
+  margin-top: 22rpx;
+}
+
+.vow-actions .outline-button {
+  flex: 1;
+}
+
+.vow-empty {
+  margin-top: 28rpx;
+}
+
+.principles {
+  overflow: hidden;
+  border: 1rpx solid #dcd9d2;
+  border-radius: 8rpx;
+  background: #fdfcf9;
+}
+
+.principle {
+  display: flex;
+  gap: 20rpx;
+  padding: 26rpx;
+  border-bottom: 1rpx solid #e5e2dc;
+}
+
+.principle:last-child {
+  border-bottom: 0;
+}
+
+.principle-index {
+  display: flex;
+  flex: 0 0 54rpx;
+  align-items: center;
+  justify-content: center;
+  width: 54rpx;
+  height: 54rpx;
+  border: 1rpx solid #e39a5b;
+  border-radius: 4rpx;
+  color: #c97b3c;
+}
+
+.principle-title,
+.principle-desc {
+  display: block;
+}
+
+.principle-title {
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.principle-desc {
+  color: #8a857d;
+  font-size: 24rpx;
+}
+
+.privacy-card {
+  margin-top: 36rpx;
+  padding: 28rpx;
+  border: 1rpx solid #dcd9d2;
+  border-radius: 8rpx;
+  background: #efede8;
+}
+
+.privacy-title,
+.privacy-desc {
+  display: block;
+}
+
+.privacy-title {
+  font-size: 29rpx;
+  font-weight: 600;
+}
+
+.privacy-desc {
+  margin-top: 8rpx;
+  color: #6d6962;
+  font-size: 23rpx;
+}
+
+.clear-button {
+  width: auto;
+  min-height: 68rpx;
+  margin: 22rpx 0 0;
+  padding: 0;
+  color: #a95847;
+  background: transparent;
+  font-size: 24rpx;
+  text-align: left;
+}
+
+.vow-form-sheet {
+  min-height: 62vh;
+  max-height: 82vh;
+}
+
+.form-label-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18rpx;
+  margin-top: 30rpx;
+}
+
+.form-label-row .form-label {
+  margin: 0 0 10rpx;
+}
+
+.combo-field {
+  position: relative;
+  z-index: 1;
+}
+
+.combo-field.open {
+  z-index: 40;
+}
+
+.combo-input {
+  padding-right: 70rpx;
+}
+
+.combo-control {
+  display: flex;
+  align-items: center;
+}
+
+.combo-placeholder {
+  color: #aaa49b;
+}
+
+.combo-value {
+  color: #242321;
+}
+
+.combo-arrow {
+  position: absolute;
+  z-index: 2;
+  top: 19rpx;
+  right: 22rpx;
+  color: #c97b3c;
+  font-family: sans-serif;
+  font-size: 28rpx;
+  line-height: 1;
+}
+
+.dropdown-menu {
+  position: absolute;
+  z-index: 50;
+  top: calc(100% + 8rpx);
+  right: 0;
+  left: 0;
+  overflow: hidden;
+  border: 1rpx solid #cfc8bc;
+  border-radius: 7rpx;
+  background: #fffefa;
+  box-shadow: 0 16rpx 40rpx rgba(47, 42, 35, .16);
+}
+
+.dropdown-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+  min-height: 70rpx;
+  padding: 10rpx 20rpx;
+  border-bottom: 1rpx solid #ebe7df;
+  color: #3f3c37;
+  font-size: 25rpx;
+}
+
+.dropdown-option:last-child {
+  border-bottom: 0;
+}
+
+.dropdown-option text:first-child {
+  flex: 0 0 auto;
+  font-weight: 600;
+}
+
+.dropdown-option text:last-child {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: #8a857d;
+  font-size: 21rpx;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dropdown-option.custom {
+  color: #a95835;
+  background: #f8f1e8;
+}
+
+.vow-submit {
+  margin-top: 30rpx;
+}

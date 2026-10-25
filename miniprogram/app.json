@@ -1,0 +1,37 @@
+{
+  "pages": [
+    "pages/today/index",
+    "pages/ledger/index",
+    "pages/vows/index"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#f4f3ef",
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "",
+    "backgroundColor": "#f4f3ef",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#8a857d",
+    "selectedColor": "#c97b3c",
+    "backgroundColor": "#fdfcf9",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/today/index",
+        "text": "今日"
+      },
+      {
+        "pagePath": "pages/ledger/index",
+        "text": "功过簿"
+      },
+      {
+        "pagePath": "pages/vows/index",
+        "text": "善愿"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap.json",
+  "style": "v2"
+}

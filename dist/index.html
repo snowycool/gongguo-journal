@@ -1,0 +1,1326 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f6f2">
+  <meta name="description" content="功过格——依《了凡四训》方法，立一善愿，逐日登记功过。">
+  <title>功过格</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='3' fill='%23f7f6f2'/%3E%3Crect x='13' y='11' width='38' height='42' rx='2' fill='none' stroke='%23262421' stroke-width='3'/%3E%3Cpath d='M32 12v40M14 30h36' stroke='%23e39a5b' stroke-width='3'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --ink: #171d1b;
+      --ink-2: #303a36;
+      --muted: #737a75;
+      --paper: #f6f1e7;
+      --paper-deep: #e9dfcc;
+      --surface: #fffdf8;
+      --line: rgba(23, 29, 27, .14);
+      --seal: #aa4333;
+      --seal-deep: #883329;
+      --jade: #3f6759;
+      --gold: #a47a35;
+      --radius: 20px;
+      --shadow: 0 18px 60px rgba(23, 29, 27, .14);
+    }
+    * { box-sizing: border-box; }
+    html { background: #d7ddd8; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font: 16px/1.6 "Noto Serif SC", "Songti SC", "Microsoft YaHei", serif;
+      background:
+        radial-gradient(circle at 15% 8%, rgba(255,255,255,.82), transparent 30%),
+        radial-gradient(circle at 88% 88%, rgba(48,74,64,.15), transparent 35%),
+        #d7ddd8;
+    }
+    button, input, textarea { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible {
+      outline: 3px solid rgba(170,67,51,.24); outline-offset: 2px;
+    }
+    .shell {
+      position: relative; width: min(100%, 440px); min-height: 100vh; margin: 0 auto; overflow: hidden;
+      background:
+        linear-gradient(rgba(246,241,231,.96),rgba(246,241,231,.98)),
+        repeating-linear-gradient(0deg,transparent 0 31px,rgba(23,29,27,.035) 32px);
+      box-shadow: var(--shadow);
+    }
+    .app { min-height: 100vh; padding-bottom: 88px; }
+    .view { display: none; animation: fade .22s ease; }
+    .view.active { display: block; }
+    @keyframes fade { from { opacity: .25; transform: translateY(5px); } }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: max(18px, env(safe-area-inset-top)) 20px 8px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-seal {
+      width: 38px; height: 38px; display: grid; place-items: center; border: 2px solid var(--seal);
+      border-radius: 8px; color: var(--seal); font-weight: 800; transform: rotate(-2deg);
+    }
+    .brand strong { font-size: 20px; letter-spacing: .18em; }
+    .privacy { color: var(--muted); font-size: 13px; }
+    main { padding: 0 18px 30px; }
+    h1, h2, h3, p { margin-top: 0; }
+    .date-head { padding: 23px 2px 17px; }
+    .kicker { color: var(--seal); font-size: 13px; letter-spacing: .16em; font-weight: 700; }
+    .date-head h1 { margin: 4px 0 2px; font-size: 31px; line-height: 1.25; }
+    .date-head p { margin: 0; color: var(--muted); font-size: 14px; }
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 7px; margin-top: 13px; padding: 7px 11px;
+      border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: rgba(255,255,255,.5); font-size: 13px;
+    }
+    .status-pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--gold); }
+    .status-pill.done::before { background: var(--jade); }
+    .vow-card {
+      position: relative; overflow: hidden; padding: 21px; border-radius: 26px; color: #f7f0e5;
+      background: var(--ink); box-shadow: 0 13px 32px rgba(23,29,27,.18);
+    }
+    .vow-card::after {
+      content: "愿"; position: absolute; right: -6px; bottom: -39px; color: rgba(255,255,255,.04);
+      font-size: 132px; line-height: 1; font-weight: 800;
+    }
+    .vow-top { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: start; }
+    .vow-label { color: #aab9b3; font-size: 13px; letter-spacing: .12em; }
+    .vow-card h2 { margin: 5px 0 0; font-size: 23px; }
+    .vow-count { text-align: right; color: #e4c780; }
+    .vow-count strong { display: block; font: 650 28px/1 system-ui,sans-serif; }
+    .vow-count span { font-size: 12px; }
+    .progress { position: relative; z-index: 1; height: 7px; margin-top: 23px; overflow: hidden; border-radius: 9px; background: rgba(255,255,255,.12); }
+    .progress i { display: block; height: 100%; border-radius: inherit; background: #d7b667; }
+    .progress-meta { position: relative; z-index: 1; display: flex; justify-content: space-between; margin-top: 8px; color: #aab9b3; font-size: 12px; }
+    .primary {
+      width: 100%; border: 0; border-radius: 16px; padding: 14px 18px; cursor: pointer;
+      color: white; background: var(--seal); box-shadow: 0 8px 20px rgba(170,67,51,.22); font-weight: 700;
+    }
+    .primary:active { transform: translateY(1px); }
+    .today-action { margin-top: 14px; }
+    .section-head { display: flex; align-items: center; justify-content: space-between; margin: 25px 2px 12px; }
+    .section-head h2 { margin: 0; font-size: 18px; }
+    .section-head span, .link-btn { color: var(--muted); font-size: 13px; }
+    .link-btn { border: 0; padding: 5px; background: none; cursor: pointer; }
+    .summary {
+      display: grid; grid-template-columns: repeat(3,1fr); padding: 17px 7px; border: 1px solid var(--line);
+      border-radius: var(--radius); background: rgba(255,253,248,.88); text-align: center;
+    }
+    .summary div + div { border-left: 1px solid var(--line); }
+    .summary strong { display: block; font: 700 26px/1.2 system-ui,sans-serif; }
+    .summary span { color: var(--muted); font-size: 13px; }
+    .summary .good strong { color: var(--jade); }
+    .summary .fault strong { color: var(--seal); }
+    .quote {
+      margin-top: 21px; padding: 17px 18px; border-left: 3px solid var(--seal); color: var(--ink-2);
+      background: rgba(255,255,255,.42); font-size: 15px;
+    }
+    .quote cite { display: block; margin-top: 5px; color: var(--muted); font-size: 12px; font-style: normal; }
+    .page-head { padding: 24px 2px 12px; }
+    .page-head h1 { margin-bottom: 4px; font-size: 28px; }
+    .page-head p { margin: 0; color: var(--muted); font-size: 14px; }
+    .calendar {
+      overflow: hidden; border: 1px solid var(--line); border-radius: 22px; background: rgba(255,253,248,.86);
+    }
+    .calendar-toolbar {
+      display: grid; grid-template-columns: 74px 1fr 74px; align-items: center; min-height: 58px;
+      border-bottom: 1px solid var(--line); background: rgba(233,223,204,.62);
+    }
+    .calendar-toolbar h2 { margin: 0; text-align: center; font-size: 19px; }
+    .month-button { border: 0; padding: 10px 6px; color: var(--muted); background: none; cursor: pointer; font-size: 13px; }
+    .month-button:hover { color: var(--seal); }
+    .weekdays, .calendar-grid { display: grid; grid-template-columns: repeat(7,1fr); }
+    .weekdays { padding: 8px 8px 5px; color: var(--muted); font-size: 12px; text-align: center; }
+    .calendar-grid { padding: 4px 8px 10px; }
+    .calendar-spacer { min-height: 64px; }
+    .calendar-day {
+      position: relative; min-width: 0; min-height: 64px; border: 0; border-radius: 13px; padding: 7px 3px 5px;
+      color: var(--ink); background: transparent; cursor: default; text-align: center;
+    }
+    .calendar-day.has-entry { cursor: pointer; }
+    .calendar-day.has-entry:hover { background: var(--paper); }
+    .calendar-day.today { box-shadow: inset 0 0 0 1px rgba(170,67,51,.4); }
+    .calendar-day .day-number { display: block; font: 500 14px/1.3 system-ui,sans-serif; }
+    .calendar-day .day-net {
+      display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 24px; margin-top: 5px;
+      border-radius: 999px; color: #a2a6a3; background: rgba(23,29,27,.045); font: 650 13px/1 system-ui,sans-serif;
+    }
+    .calendar-day .day-net.positive { color: var(--jade); background: rgba(63,103,89,.1); }
+    .calendar-day .day-net.negative { color: var(--seal); background: rgba(170,67,51,.1); }
+    .calendar-day .day-net.zero { color: var(--gold); background: rgba(164,122,53,.1); }
+    .calendar-legend {
+      display: flex; align-items: center; justify-content: center; gap: 14px; padding: 12px;
+      border-top: 1px solid var(--line); color: var(--muted); font-size: 12px;
+    }
+    .calendar-legend span::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 50%; background: #b8bbb9; }
+    .calendar-legend .legend-good::before { background: var(--jade); }
+    .calendar-legend .legend-fault::before { background: var(--seal); }
+    .calendar-legend .legend-even::before { background: var(--gold); }
+    .ledger-switch {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 12px; padding: 4px;
+      border: 1px solid var(--line); border-radius: 14px; background: rgba(233,223,204,.5);
+    }
+    .ledger-switch button {
+      min-height: 38px; border: 0; border-radius: 10px; color: var(--muted); background: transparent;
+      cursor: pointer; font: 600 14px/1 system-ui,sans-serif;
+    }
+    .ledger-switch button.active { color: var(--ink); background: var(--paper); box-shadow: 0 2px 10px rgba(44,37,28,.08); }
+    .ledger-panel[hidden] { display: none; }
+    .month-summary {
+      display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--line);
+      background: rgba(255,253,248,.72);
+    }
+    .month-summary span { color: var(--muted); font-size: 14px; }
+    .month-summary strong { margin-left: auto; font: 700 26px/1 system-ui,sans-serif; }
+    .month-summary small { min-width: 66px; color: var(--muted); font-size: 12px; text-align: right; }
+    .year-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; padding: 14px; }
+    .year-month {
+      min-width: 0; min-height: 88px; border: 1px solid var(--line); border-radius: 15px; padding: 12px 8px;
+      color: var(--ink); background: rgba(255,253,248,.72); cursor: pointer; text-align: center;
+    }
+    .year-month:hover { border-color: rgba(170,67,51,.34); background: var(--paper); }
+    .year-month.current { box-shadow: inset 0 0 0 1px rgba(170,67,51,.42); }
+    .year-month span { display: block; color: var(--muted); font-size: 13px; }
+    .year-month strong { display: block; margin-top: 9px; font: 700 21px/1 system-ui,sans-serif; }
+    .year-month small { display: block; margin-top: 7px; color: var(--muted); font-size: 11px; }
+    @media (max-width: 380px) {
+      .year-grid { grid-template-columns: repeat(2,1fr); }
+      .calendar-legend { gap: 9px; }
+    }
+    .positive { color: var(--jade); }
+    .negative { color: var(--seal); }
+    .zero { color: var(--gold); }
+    .empty {
+      padding: 32px 18px; border: 1px dashed rgba(23,29,27,.2); border-radius: 18px;
+      color: var(--muted); text-align: center;
+    }
+    .vow-detail {
+      padding: 20px; border: 1px solid var(--line); border-radius: 22px; background: rgba(255,253,248,.86);
+    }
+    .vow-list { display: grid; gap: 12px; }
+    .vow-detail.completed { border-color: rgba(164,122,53,.46); background: linear-gradient(145deg,rgba(255,253,248,.94),rgba(247,239,218,.9)); }
+    .vow-detail-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+    .vow-summary-toggle { width: 100%; border: 0; padding: 0; color: inherit; background: transparent; cursor: pointer; text-align: left; }
+    .vow-summary-toggle:focus-visible { outline: 2px solid rgba(170,67,51,.42); outline-offset: 7px; border-radius: 10px; }
+    .vow-title-side { display: flex; align-items: center; gap: 10px; }
+    .vow-fold-label { color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .vow-dates { display: grid; gap: 2px; margin-top: 2px; }
+    .vow-dates span { white-space: nowrap; }
+    .vow-body[hidden] { display: none; }
+    .vow-status { display: inline-flex; align-items: center; gap: 6px; color: var(--jade); font-size: 12px; letter-spacing: .08em; }
+    .vow-status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .completed .vow-status { color: var(--gold); }
+    .completion-reward {
+      flex: 0 0 54px; width: 54px; height: 54px; display: grid; place-items: center; border: 1px solid rgba(164,122,53,.48);
+      border-radius: 50%; color: #94661d; background: radial-gradient(circle,#fff9df 0 46%,#ead39c 47% 57%,#f8edcb 58%);
+      box-shadow: 0 5px 16px rgba(137,98,34,.16); font: 700 24px/1 Georgia,serif;
+    }
+    .vow-detail h2 { margin-bottom: 3px; font-size: 22px; }
+    .vow-detail .small { color: var(--muted); font-size: 13px; }
+    .vow-progress { height: 7px; margin-top: 17px; overflow: hidden; border-radius: 999px; background: rgba(23,29,27,.08); }
+    .vow-progress i { display: block; height: 100%; border-radius: inherit; background: var(--jade); }
+    .completed .vow-progress i { background: var(--gold); }
+    .vow-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 17px; }
+    .vow-stat { padding: 14px; border-radius: 15px; background: var(--paper); }
+    .vow-stat span { display: block; color: var(--muted); font-size: 12px; }
+    .vow-stat strong { display: block; margin-top: 3px; font-size: 20px; }
+    .vow-note { margin: 18px 0 0; padding-top: 16px; border-top: 1px solid var(--line); color: var(--ink-2); }
+    .vow-actions { display: grid; grid-template-columns: repeat(auto-fit,minmax(120px,1fr)); gap: 9px; margin-top: 12px; }
+    .vow-actions .outline { margin-top: 0; }
+    .outline {
+      width: 100%; margin-top: 12px; border: 1px solid var(--ink); border-radius: 15px; padding: 12px;
+      background: transparent; cursor: pointer; font-weight: 700;
+    }
+    .principles { display: grid; gap: 9px; }
+    .principle { display: flex; gap: 11px; padding: 14px; border-radius: 17px; background: rgba(255,255,255,.5); }
+    .principle b { flex: 0 0 29px; height: 29px; display: grid; place-items: center; border: 1px solid var(--seal); border-radius: 7px; color: var(--seal); }
+    .principle strong { display: block; font-size: 15px; }
+    .principle span { color: var(--muted); font-size: 13px; }
+    .nav {
+      position: fixed; z-index: 20; left: 50%; bottom: 0; transform: translateX(-50%); width: min(100%,440px);
+      display: grid; grid-template-columns: repeat(3,1fr); padding: 8px 10px max(8px, env(safe-area-inset-bottom));
+      border-top: 1px solid var(--line); background: rgba(250,247,239,.94); backdrop-filter: blur(16px);
+    }
+    .nav button { border: 0; padding: 6px 3px; color: var(--muted); background: none; cursor: pointer; font-size: 12px; }
+    .nav-icon { display: block; width: 24px; height: 22px; margin: 0 auto 2px; font: 18px/22px system-ui,sans-serif; }
+    .nav button.active { color: var(--seal); font-weight: 700; }
+    .overlay {
+      position: fixed; z-index: 50; inset: 0; display: none; align-items: end; justify-content: center;
+      background: rgba(12,17,15,.5); backdrop-filter: blur(4px);
+    }
+    .overlay.open { display: flex; }
+    .sheet {
+      width: min(100%,440px); max-height: 92vh; overflow: auto; padding: 10px 19px 28px;
+      border-radius: 28px 28px 0 0; background: var(--paper); box-shadow: 0 -15px 50px rgba(0,0,0,.22);
+      animation: rise .24s ease;
+    }
+    @keyframes rise { from { transform: translateY(30px); opacity: .4; } }
+    .handle { width: 42px; height: 5px; margin: 0 auto 18px; border-radius: 8px; background: rgba(23,29,27,.18); }
+    .sheet-head { display: flex; justify-content: space-between; align-items: start; gap: 10px; }
+    .sheet-head h2 { margin-bottom: 3px; font-size: 23px; }
+    .sheet-head p { margin: 0; color: var(--muted); font-size: 13px; }
+    .close { width: 36px; height: 36px; flex: 0 0 auto; border: 0; border-radius: 50%; background: var(--paper-deep); cursor: pointer; }
+    .entry-section { margin-top: 20px; }
+    .entry-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .entry-title h3 { margin: 0; font-size: 18px; }
+    .entry-title small { color: var(--muted); }
+    .entry-list { display: grid; gap: 9px; }
+    .entry-item { display: grid; grid-template-columns: 1fr 66px 34px; gap: 8px; align-items: start; }
+    input, textarea {
+      width: 100%; border: 1px solid var(--line); border-radius: 13px; padding: 11px 12px;
+      color: var(--ink); background: rgba(255,255,255,.74); font-size: 15px;
+    }
+    input[type="number"] { text-align: center; }
+    .remove { width: 34px; height: 43px; border: 0; border-radius: 10px; color: var(--muted); background: var(--paper-deep); cursor: pointer; }
+    .add-row { margin-top: 9px; border: 0; padding: 7px 2px; color: var(--seal); background: none; cursor: pointer; font-weight: 700; }
+    .settlement {
+      display: grid; grid-template-columns: repeat(3,1fr); margin-top: 20px; padding: 14px 4px;
+      border: 1px solid var(--line); border-radius: 16px; text-align: center; background: rgba(255,255,255,.45);
+    }
+    .settlement div + div { border-left: 1px solid var(--line); }
+    .settlement strong { display: block; font: 700 22px/1.2 system-ui,sans-serif; }
+    .settlement span { color: var(--muted); font-size: 12px; }
+    label { display: block; margin: 15px 0 7px; font-size: 14px; font-weight: 700; }
+    textarea { min-height: 84px; resize: vertical; }
+    .detail-list { margin: 14px 0 0; padding: 0; list-style: none; }
+    .detail-list li { padding: 12px 0; border-top: 1px solid var(--line); }
+    .detail-list li:first-child { border-top: 0; }
+    .detail-list small { display: block; color: var(--muted); }
+    .toast {
+      position: fixed; z-index: 90; left: 50%; bottom: 98px; transform: translate(-50%,12px);
+      padding: 10px 16px; border-radius: 999px; color: white; background: rgba(23,29,27,.93);
+      opacity: 0; pointer-events: none; transition: .2s; font-size: 13px;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%,0); }
+    @media (min-width: 700px) {
+      body { padding: 28px 0; }
+      .shell { min-height: calc(100vh - 56px); border-radius: 34px; }
+      .app { min-height: calc(100vh - 56px); }
+      .nav { bottom: 28px; border-radius: 0 0 34px 34px; }
+      .sheet { margin-bottom: 28px; border-radius: 28px; }
+    }
+    /* UI v2 · 纸笺与印色 */
+    :root {
+      --ink: #263633;
+      --ink-2: #4a5b57;
+      --muted: #5a6a64;
+      --paper: #f1f3ef;
+      --paper-deep: #e3e8e3;
+      --surface: #fbfcf9;
+      --line: rgba(49, 67, 61, .12);
+      --seal: #a9564d;
+      --seal-deep: #87433e;
+      --jade: #4f6d62;
+      --gold: #80643b;
+      --radius: 20px;
+      --radius-inner: 14px;
+      --shadow: 0 18px 48px rgba(38, 54, 51, .09);
+    }
+    body {
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1.62;
+      background:
+        radial-gradient(circle at 18% 5%, rgba(255,255,255,.72), transparent 28%),
+        radial-gradient(circle at 88% 94%, rgba(79,109,98,.055), transparent 34%),
+        #dfe5e1;
+    }
+    button, input, textarea { transition: border-color .18s ease, background-color .18s ease, color .18s ease, transform .18s ease, box-shadow .18s ease; }
+    button { min-height: 44px; }
+    .shell {
+      width: min(100%, 460px);
+      background:
+        radial-gradient(circle at 92% 5%, rgba(169,86,77,.025), transparent 26%),
+        linear-gradient(180deg,#f8faf6 0%,#eef2ed 100%);
+    }
+    .app { padding-bottom: 106px; }
+    .topbar { padding: max(19px,env(safe-area-inset-top)) 22px 14px; }
+    .brand { gap: 11px; }
+    .brand-seal { width: 36px; height: 36px; border-radius: 10px; font-size: 16px; }
+    .brand strong { font-size: 19px; letter-spacing: .2em; }
+    .privacy {
+      padding: 5px 9px; border: 1px solid rgba(79,109,98,.17); border-radius: 999px;
+      color: var(--jade); background: rgba(255,255,255,.46); font-size: 13px;
+    }
+    main { padding: 0 20px 34px; }
+    .date-head { padding: 27px 1px 20px; }
+    .kicker { display: flex; align-items: center; gap: 8px; color: var(--seal); font-size: 13px; letter-spacing: .14em; }
+    .kicker::before { content: ""; width: 18px; height: 2px; border-radius: 2px; background: currentColor; }
+    .date-head h1 { margin: 7px 0 2px; font-size: 35px; line-height: 1.18; letter-spacing: .02em; }
+    .date-head p { font-size: 14px; }
+    .status-pill {
+      margin-top: 14px; padding: 7px 12px; border-color: rgba(49,67,61,.13);
+      color: var(--ink-2); background: rgba(251,252,249,.86); box-shadow: 0 3px 12px rgba(38,54,51,.03);
+    }
+    .vow-card {
+      padding: 22px; border: 1px solid rgba(255,255,255,.06); border-radius: 22px;
+      background: linear-gradient(145deg,#294139 0%,#1b2c27 100%);
+      box-shadow: 0 16px 36px rgba(29,45,39,.16);
+    }
+    .vow-card::after { right: 2px; bottom: -32px; font-size: 118px; color: rgba(255,255,255,.035); }
+    .vow-label, .progress-meta { color: #b7c3bd; font-size: 13px; }
+    .vow-card h2 { margin-top: 6px; font-size: 23px; }
+    .vow-count { color: #d6c28d; }
+    .vow-count strong { font-size: 30px; font-variant-numeric: tabular-nums; }
+    .progress { height: 6px; margin-top: 24px; }
+    .progress i { background: #c5a866; }
+    .primary {
+      min-height: 52px; border-radius: 15px; padding: 14px 18px; background: var(--seal);
+      box-shadow: 0 9px 22px rgba(169,86,77,.14); letter-spacing: .04em;
+    }
+    .primary:hover { background: var(--seal-deep); box-shadow: 0 11px 26px rgba(135,67,62,.2); }
+    .today-action { margin-top: 14px; }
+    .section-head { margin: 28px 2px 13px; }
+    .section-head h2 { font-size: 19px; }
+    .section-head span, .link-btn { font-size: 13px; }
+    .summary { gap: 8px; padding: 0; border: 0; background: transparent; }
+    .summary > div {
+      padding: 16px 5px; border: 1px solid var(--line); border-radius: var(--radius-inner);
+      background: rgba(251,252,249,.92);
+    }
+    .summary div + div { border-left: 1px solid var(--line); }
+    .summary strong { font-size: 25px; font-variant-numeric: tabular-nums; }
+    .summary span { font-size: 13px; }
+    .quote {
+      position: relative; margin-top: 18px; padding: 17px 18px 17px 45px; border: 1px solid rgba(49,67,61,.09);
+      border-radius: var(--radius-inner); color: var(--ink-2); background: rgba(251,252,249,.7); font-size: 14px;
+    }
+    .quote::before { content: "“"; position: absolute; left: 15px; top: 4px; color: rgba(169,86,77,.32); font: 34px/1 Georgia,serif; }
+    .quote cite { font-size: 13px; }
+    .page-head { padding: 28px 1px 16px; }
+    .page-head h1 { margin-bottom: 4px; font-size: 29px; }
+    .page-head p { font-size: 14px; }
+    .ledger-switch {
+      gap: 5px; margin-bottom: 14px; padding: 5px; border-color: rgba(49,67,61,.12);
+      border-radius: 15px; background: rgba(227,232,227,.84);
+    }
+    .ledger-switch button { min-height: 42px; border-radius: 11px; font-size: 14px; }
+    .ledger-switch button.active { color: #fff; background: var(--ink); box-shadow: 0 5px 14px rgba(38,54,51,.1); }
+    .calendar { border-color: var(--line); border-radius: 21px; background: rgba(251,252,249,.94); box-shadow: 0 10px 30px rgba(38,54,51,.04); }
+    .calendar-toolbar {
+      grid-template-columns: 80px 1fr 80px; min-height: 62px; border-bottom-color: var(--line);
+      background: rgba(251,252,249,.82);
+    }
+    .calendar-toolbar h2 { font-size: 18px; }
+    .month-button {
+      min-height: 44px; margin: 6px; border: 1px solid transparent; border-radius: 11px;
+      color: var(--ink-2); font-size: 13px;
+    }
+    .month-button:hover { border-color: rgba(169,86,77,.18); color: var(--seal); background: rgba(169,86,77,.04); }
+    .month-summary { padding: 15px 17px; background: rgba(79,109,98,.045); }
+    .month-summary span { font-size: 14px; }
+    .month-summary strong { font-size: 27px; font-variant-numeric: tabular-nums; }
+    .month-summary small { font-size: 13px; }
+    .weekdays { padding-top: 10px; font-size: 13px; }
+    .calendar-day { min-height: 65px; border-radius: 12px; }
+    .calendar-day.has-entry:hover { background: rgba(79,109,98,.05); }
+    .calendar-day.today { background: rgba(169,86,77,.038); box-shadow: inset 0 0 0 1px rgba(169,86,77,.28); }
+    .calendar-day .day-number { font-size: 14px; }
+    .calendar-day .day-net { min-width: 29px; height: 24px; }
+    .calendar-day .day-net.positive { background: rgba(79,109,98,.09); }
+    .calendar-day .day-net.negative { background: rgba(169,86,77,.08); }
+    .calendar-day .day-net.zero { background: rgba(128,100,59,.08); }
+    .calendar-legend { flex-wrap: wrap; gap: 8px 13px; padding: 13px 10px; font-size: 13px; }
+    .year-grid { gap: 9px; padding: 15px; }
+    .year-month { min-height: 92px; border-radius: var(--radius-inner); background: rgba(251,252,249,.88); }
+    .year-month span { font-size: 13px; }
+    .year-month strong { font-size: 22px; font-variant-numeric: tabular-nums; }
+    .year-month small { font-size: 12px; }
+    .vow-list { gap: 11px; }
+    .vow-detail { padding: 19px; border-radius: 20px; background: rgba(251,252,249,.94); }
+    .vow-detail.completed { border-color: rgba(128,100,59,.28); background: linear-gradient(145deg,rgba(251,252,249,.98),rgba(239,241,235,.96)); }
+    .vow-detail h2 { font-size: 21px; }
+    .vow-detail .small, .vow-fold-label { font-size: 13px; }
+    .completion-reward {
+      flex-basis: 46px; width: 46px; height: 46px; border-color: rgba(128,100,59,.3);
+      color: var(--gold); background: radial-gradient(circle,#fafbf7 0 46%,#d8d8cc 47% 57%,#eef1eb 58%);
+      box-shadow: 0 4px 13px rgba(38,54,51,.08); font-size: 20px;
+    }
+    .vow-grid { gap: 9px; }
+    .vow-stat { padding: 13px; border-radius: var(--radius-inner); background: rgba(237,241,236,.94); }
+    .vow-stat span { font-size: 13px; }
+    .vow-stat strong { font-variant-numeric: tabular-nums; }
+    .outline { min-height: 46px; border-color: rgba(38,54,51,.66); border-radius: 13px; }
+    .outline:hover { color: var(--seal); border-color: var(--seal); background: rgba(169,86,77,.038); }
+    .principles { gap: 9px; }
+    .principle { padding: 15px; border: 1px solid rgba(49,67,61,.08); border-radius: var(--radius-inner); background: rgba(251,252,249,.76); }
+    .principle b { border-radius: 8px; }
+    .principle strong { font-size: 15px; }
+    .principle span { font-size: 13px; }
+    .nav {
+      bottom: max(12px,env(safe-area-inset-bottom)); width: min(calc(100% - 24px),436px); gap: 4px;
+      padding: 6px; border: 1px solid rgba(49,67,61,.12); border-radius: 20px;
+      background: rgba(251,252,249,.96); box-shadow: 0 12px 34px rgba(38,54,51,.1); backdrop-filter: blur(20px);
+    }
+    .nav button { position: relative; min-height: 56px; border-radius: 14px; padding: 5px 3px; font-size: 13px; }
+    .nav button.active { color: var(--seal); background: rgba(169,86,77,.07); }
+    .nav button.active::after {
+      content: ""; position: absolute; left: 50%; bottom: 4px; width: 16px; height: 2px;
+      transform: translateX(-50%); border-radius: 2px; background: currentColor;
+    }
+    .nav-icon { width: 22px; height: 22px; margin-bottom: 2px; }
+    .nav-icon svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .overlay { background: rgba(19,27,23,.58); backdrop-filter: blur(7px); }
+    .sheet {
+      width: min(100%,460px); max-height: 92dvh; padding: 10px 20px max(26px,env(safe-area-inset-bottom));
+      border-radius: 26px 26px 0 0; background: #f5f7f3;
+    }
+    .handle { width: 38px; height: 4px; margin-bottom: 20px; }
+    .sheet-head h2 { font-size: 22px; }
+    .sheet-head p { font-size: 13px; }
+    .close { width: 44px; height: 44px; background: rgba(227,232,227,.96); }
+    .entry-section { margin-top: 22px; }
+    .entry-title h3 { font-size: 18px; }
+    .entry-title small { font-size: 13px; }
+    .entry-list { gap: 9px; }
+    .entry-item { grid-template-columns: minmax(0,1fr) 64px 44px; gap: 8px; }
+    input, textarea { min-height: 46px; border-radius: 12px; padding: 11px 12px; background: rgba(251,252,249,.96); }
+    .remove { width: 44px; height: 46px; border-radius: 12px; }
+    .add-row { min-height: 42px; margin-top: 7px; font-size: 14px; }
+    .settlement { margin-top: 22px; border-radius: var(--radius-inner); background: rgba(251,252,249,.82); }
+    .settlement strong { font-variant-numeric: tabular-nums; }
+    .toast { bottom: 110px; }
+    .summary strong, .month-summary strong, .year-month strong, .vow-stat strong, .settlement strong { font-variant-numeric: tabular-nums; }
+    @media (max-width: 380px) {
+      .topbar { padding-left: 16px; padding-right: 16px; }
+      main { padding-left: 16px; padding-right: 16px; }
+      .date-head h1 { font-size: 32px; }
+      .privacy { padding: 4px 8px; }
+      .calendar-toolbar { grid-template-columns: 72px 1fr 72px; }
+      .calendar-grid { padding-left: 5px; padding-right: 5px; }
+      .calendar-day { min-height: 60px; }
+      .year-grid { grid-template-columns: repeat(2,1fr); }
+      .nav { bottom: max(8px,env(safe-area-inset-bottom)); width: calc(100% - 16px); }
+    }
+    @media (min-width: 700px) {
+      .nav { bottom: 40px; border-radius: 20px; }
+      .sheet { border-radius: 26px; }
+    }
+    /* UI v3 · 古籍线装功过簿 */
+    :root {
+      --ink: #30261e;
+      --ink-2: #5f4f3e;
+      --muted: #6b5a48;
+      --paper: #e8dcc6;
+      --paper-deep: #d7c39c;
+      --surface: #f3e9d3;
+      --line: rgba(96,72,45,.34);
+      --seal: #8f3028;
+      --seal-deep: #6f261f;
+      --jade: #496555;
+      --gold: #80612f;
+      --radius: 4px;
+      --radius-inner: 2px;
+      --shadow: 0 18px 48px rgba(55,39,25,.2);
+    }
+    body {
+      color: var(--ink);
+      font-family: "Noto Serif SC","Source Han Serif SC","STSong","SimSun",serif;
+      background:
+        repeating-linear-gradient(90deg,rgba(255,255,255,.025) 0 2px,transparent 2px 9px),
+        linear-gradient(135deg,#665142,#4d3b30);
+    }
+    .shell {
+      border-right: 1px solid #8c7558;
+      border-left: 1px solid #8c7558;
+      border-radius: 0;
+      background:
+        radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.16),transparent 30%),
+        repeating-linear-gradient(0deg,transparent 0 27px,rgba(83,61,37,.025) 28px),
+        repeating-linear-gradient(90deg,rgba(90,67,41,.018) 0 1px,transparent 1px 7px),
+        #e8dcc6;
+      box-shadow: inset 0 0 0 6px rgba(201,175,129,.38), var(--shadow);
+    }
+    h1, h2, h3, .brand strong, .primary, .outline, .month-button, .ledger-switch button {
+      font-family: "STKaiti","KaiTi","Noto Serif SC",serif;
+    }
+    .topbar {
+      margin: 0 18px; padding: max(18px,env(safe-area-inset-top)) 3px 14px;
+      border-bottom: 3px double rgba(96,72,45,.5);
+    }
+    .brand-seal {
+      width: 35px; height: 35px; border-radius: 2px; border-color: var(--seal); color: var(--seal);
+      background: rgba(143,48,40,.025); transform: none;
+    }
+    .brand strong { color: var(--ink); font-size: 20px; letter-spacing: .24em; }
+    .privacy { padding: 0; border: 0; border-radius: 0; color: var(--muted); background: none; font-size: 12px; }
+    main { padding-right: 22px; padding-left: 22px; }
+    .date-head { padding: 25px 0 18px; }
+    .kicker { color: var(--seal); letter-spacing: .13em; }
+    .kicker::before { width: 16px; height: 1px; border-radius: 0; }
+    .date-head h1 { margin-top: 8px; font-size: 34px; letter-spacing: .05em; }
+    .status-pill {
+      padding: 5px 9px; border-color: rgba(96,72,45,.35); border-radius: 2px;
+      color: var(--ink-2); background: rgba(243,233,211,.44); box-shadow: none;
+    }
+    .status-pill::before { border-radius: 0; transform: rotate(45deg); }
+    .vow-card {
+      padding: 20px; border: 3px double rgba(96,72,45,.62); border-radius: 2px; color: var(--ink);
+      background: rgba(243,233,211,.42); box-shadow: inset 0 0 0 4px rgba(201,175,129,.12);
+    }
+    .vow-card::after { right: 4px; bottom: -27px; color: rgba(143,48,40,.055); font-size: 108px; }
+    .vow-label, .progress-meta { color: var(--ink-2); }
+    .vow-card h2 { color: var(--ink); }
+    .vow-count { color: var(--seal); }
+    .progress { height: 5px; border-radius: 0; background: rgba(96,72,45,.18); }
+    .progress i { border-radius: 0; background: var(--jade); }
+    .primary {
+      min-height: 50px; border: 1px solid var(--seal-deep); border-radius: 3px; color: #f7ebd3;
+      background: var(--seal); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); letter-spacing: .08em;
+    }
+    .primary:hover { background: var(--seal-deep); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
+    .section-head { padding-bottom: 7px; border-bottom: 1px solid rgba(96,72,45,.32); }
+    .section-head h2 { letter-spacing: .08em; }
+    .summary {
+      gap: 0; border: 3px double rgba(96,72,45,.55); border-radius: 2px;
+      background: rgba(243,233,211,.38);
+    }
+    .summary > div { border: 0; border-radius: 0; background: transparent; }
+    .summary div + div { border-left: 1px solid rgba(96,72,45,.34); }
+    .summary strong, .month-summary strong, .year-month strong, .vow-stat strong, .settlement strong {
+      font-family: Georgia,"Times New Roman","STSong",serif;
+    }
+    .quote {
+      margin: 20px 2px 0; padding: 14px 15px 14px 38px; border: 0; border-left: 3px double var(--seal);
+      border-radius: 0; color: var(--ink-2); background: rgba(243,233,211,.22);
+    }
+    .quote::before { left: 11px; top: 3px; color: rgba(143,48,40,.48); }
+    .page-head { margin-bottom: 14px; padding: 26px 0 10px; border-bottom: 1px solid rgba(96,72,45,.32); }
+    .page-head h1 { letter-spacing: .08em; }
+    .ledger-switch {
+      gap: 0; padding: 2px; border: 1px solid rgba(96,72,45,.5); border-radius: 2px;
+      background: rgba(215,195,156,.36);
+    }
+    .ledger-switch button { border-radius: 0; letter-spacing: .08em; }
+    .ledger-switch button.active { color: #f6e9cf; background: var(--ink); box-shadow: none; }
+    .calendar {
+      overflow: hidden; border: 3px double rgba(96,72,45,.58); border-radius: 2px;
+      background: rgba(243,233,211,.42); box-shadow: none;
+    }
+    .calendar-toolbar { border-bottom-color: rgba(96,72,45,.35); background: rgba(215,195,156,.27); }
+    .calendar-toolbar h2 { letter-spacing: .05em; }
+    .month-button { margin: 0; border: 0; border-radius: 0; color: var(--ink-2); }
+    .month-button:hover { border: 0; color: var(--seal); background: rgba(143,48,40,.04); }
+    .month-summary { border-bottom-color: rgba(96,72,45,.32); background: transparent; }
+    .weekdays { border-bottom: 1px solid rgba(96,72,45,.18); color: var(--ink-2); }
+    .calendar-grid { padding: 5px 7px 9px; }
+    .calendar-day { min-height: 63px; border: 1px solid rgba(96,72,45,.055); border-radius: 0; }
+    .calendar-day.has-entry:hover { background: rgba(73,101,85,.05); }
+    .calendar-day.today { background: rgba(143,48,40,.035); box-shadow: inset 0 0 0 1px rgba(143,48,40,.55); }
+    .calendar-day .day-net { height: auto; min-width: 0; margin-top: 7px; border-radius: 0; background: transparent !important; }
+    .calendar-day .day-net.positive { color: var(--jade); }
+    .calendar-day .day-net.negative { color: var(--seal); }
+    .calendar-day .day-net.zero { color: var(--gold); }
+    .calendar-legend { border-top: 3px double rgba(96,72,45,.36); }
+    .year-grid { gap: 8px; }
+    .year-month {
+      min-height: 90px; border: 3px double rgba(96,72,45,.3); border-radius: 1px;
+      background: rgba(243,233,211,.28);
+    }
+    .year-month:hover { border-color: rgba(143,48,40,.46); background: rgba(243,233,211,.55); }
+    .year-month.current { box-shadow: inset 0 0 0 1px rgba(143,48,40,.55); }
+    .vow-detail {
+      padding: 18px; border: 3px double rgba(96,72,45,.48); border-radius: 2px;
+      background: rgba(243,233,211,.34);
+    }
+    .vow-detail.completed { border-color: rgba(128,97,47,.58); background: rgba(215,195,156,.22); }
+    .vow-status::before { border-radius: 0; transform: rotate(45deg); }
+    .completion-reward {
+      border: 2px solid var(--seal); color: var(--seal); background: rgba(143,48,40,.025);
+      box-shadow: none; font-family: "STKaiti","KaiTi",serif;
+    }
+    .vow-progress { border-radius: 0; background: rgba(96,72,45,.14); }
+    .vow-progress i { border-radius: 0; }
+    .vow-grid { gap: 7px; }
+    .vow-stat { padding: 12px; border: 1px solid rgba(96,72,45,.25); border-radius: 0; background: rgba(243,233,211,.32); }
+    .vow-note { border-top-color: rgba(96,72,45,.28); }
+    .outline { border-color: rgba(48,38,30,.7); border-radius: 2px; background: rgba(243,233,211,.18); }
+    .outline:hover { color: var(--seal); border-color: var(--seal); background: rgba(143,48,40,.025); }
+    .principles { gap: 0; border: 1px solid rgba(96,72,45,.36); }
+    .principle { padding: 14px; border: 0; border-bottom: 1px solid rgba(96,72,45,.25); border-radius: 0; background: transparent; }
+    .principle:last-child { border-bottom: 0; }
+    .principle b { border-radius: 1px; }
+    .nav {
+      bottom: 0; width: min(100%,460px); gap: 0; padding: 0;
+      border: 0; border-top: 3px double rgba(96,72,45,.62); border-radius: 0;
+      background: rgba(232,220,198,.97); box-shadow: 0 -7px 18px rgba(55,39,25,.08); backdrop-filter: none;
+    }
+    .nav button {
+      min-height: 66px; border-right: 1px solid rgba(96,72,45,.22); border-radius: 0;
+      color: var(--ink-2); background: transparent; font-family: "STKaiti","KaiTi",serif; font-size: 14px;
+    }
+    .nav button:last-child { border-right: 0; }
+    .nav button.active { color: var(--seal); background: rgba(143,48,40,.045); }
+    .nav button.active::after { top: 0; bottom: auto; width: 30px; height: 3px; border-radius: 0; }
+    .nav-icon { display: none; }
+    .overlay { background: rgba(48,38,30,.58); backdrop-filter: blur(2px); }
+    .sheet {
+      border: 3px double rgba(96,72,45,.58); border-bottom: 0; border-radius: 7px 7px 0 0;
+      background:
+        repeating-linear-gradient(0deg,transparent 0 27px,rgba(83,61,37,.02) 28px),
+        #e8dcc6;
+      box-shadow: 0 -12px 36px rgba(48,38,30,.24);
+    }
+    .handle { height: 3px; border-radius: 0; background: rgba(96,72,45,.4); }
+    .close { border: 1px solid rgba(96,72,45,.36); border-radius: 2px; background: rgba(215,195,156,.45); }
+    input, textarea { border-color: rgba(96,72,45,.35); border-radius: 2px; color: var(--ink); background: rgba(243,233,211,.66); }
+    .remove { border: 1px solid rgba(96,72,45,.22); border-radius: 2px; background: rgba(215,195,156,.46); }
+    .settlement { border: 3px double rgba(96,72,45,.48); border-radius: 2px; background: rgba(243,233,211,.26); }
+    .toast { border-radius: 2px; color: #f4e7ce; background: rgba(48,38,30,.94); }
+    @media (max-width: 380px) {
+      .topbar { margin-right: 14px; margin-left: 14px; }
+      main { padding-right: 16px; padding-left: 16px; }
+      .nav { width: 100%; bottom: 0; }
+    }
+    @media (min-width: 700px) {
+      .shell { border: 2px solid #8c7558; border-radius: 3px; }
+      .nav { bottom: 28px; border-radius: 0 0 2px 2px; }
+      .sheet { border-bottom: 3px double rgba(96,72,45,.58); border-radius: 7px; }
+    }
+    /* UI v4 · 识典古籍式数字阅读界面 */
+    :root {
+      --ink: #242321;
+      --ink-2: #4e4b46;
+      --muted: #8a857d;
+      --paper: #f7f6f2;
+      --paper-deep: #eceae4;
+      --surface: #fdfcf9;
+      --line: rgba(36,35,33,.12);
+      --seal: #e39a5b;
+      --seal-deep: #c97b3c;
+      --jade: #4f7466;
+      --gold: #9a713d;
+      --radius: 5px;
+      --radius-inner: 3px;
+      --shadow: 0 18px 55px rgba(46,43,37,.10);
+    }
+    html { background: #ebe9e4; }
+    body {
+      color: var(--ink);
+      font-family: "Source Han Serif SC","Noto Serif SC","Songti SC","STSong","SimSun",serif;
+      font-size: 15px;
+      line-height: 1.72;
+      background: #ebe9e4;
+    }
+    button, input, textarea { transition: border-color .18s ease, background-color .18s ease, color .18s ease, transform .18s ease; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible { outline-color: rgba(227,154,91,.36); }
+    .shell {
+      width: min(100%,460px);
+      border: 0;
+      border-right: 1px solid #dedbd4;
+      border-left: 1px solid #dedbd4;
+      border-radius: 0;
+      background: #f7f6f2;
+      box-shadow: var(--shadow);
+    }
+    h1, h2, h3, .brand strong, .primary, .outline, .month-button, .ledger-switch button {
+      font-family: "Source Han Serif SC","Noto Serif SC","Songti SC","STSong","SimSun",serif;
+    }
+    .topbar {
+      margin: 0;
+      padding: max(15px,env(safe-area-inset-top)) 20px 13px;
+      border-bottom: 1px solid #dedbd4;
+      background: rgba(253,252,249,.92);
+    }
+    .brand { gap: 9px; }
+    .brand-seal {
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--seal);
+      border-radius: 2px;
+      color: var(--seal-deep);
+      background: transparent;
+      font-size: 16px;
+      transform: none;
+    }
+    .brand strong { font-size: 19px; letter-spacing: .14em; }
+    .privacy { padding: 0; border: 0; color: var(--muted); background: transparent; font-size: 12px; }
+    main { padding-right: 20px; padding-left: 20px; }
+    .date-head { padding: 30px 0 22px; }
+    .kicker { gap: 9px; color: var(--seal-deep); font-size: 12px; letter-spacing: .14em; font-weight: 600; }
+    .kicker::before { width: 20px; height: 2px; border-radius: 0; background: var(--seal); }
+    .date-head h1 { margin: 9px 0 2px; font-size: 34px; line-height: 1.2; letter-spacing: .04em; font-weight: 650; }
+    .date-head p { color: var(--muted); }
+    .status-pill {
+      margin-top: 14px;
+      padding: 5px 9px;
+      border-color: #d9d6cf;
+      border-radius: 2px;
+      color: #6d6962;
+      background: #fbfaf7;
+      box-shadow: none;
+    }
+    .status-pill::before { width: 6px; height: 6px; border-radius: 50%; transform: none; }
+    .vow-card {
+      padding: 21px;
+      border: 1px solid #d8d5ce;
+      border-top: 3px solid var(--seal);
+      border-radius: 4px;
+      color: var(--ink);
+      background: #fdfcf9;
+      box-shadow: 0 8px 24px rgba(41,38,33,.045);
+    }
+    .vow-card::after { right: 7px; bottom: -30px; color: rgba(227,154,91,.065); font-size: 110px; }
+    .vow-label, .progress-meta { color: var(--muted); }
+    .vow-card h2 { color: var(--ink); font-size: 23px; }
+    .vow-count { color: var(--seal-deep); }
+    .progress { height: 4px; border-radius: 0; background: #e9e6df; }
+    .progress i { border-radius: 0; background: var(--seal); }
+    .primary {
+      min-height: 50px;
+      border: 0;
+      border-radius: 3px;
+      color: #fff;
+      background: var(--seal);
+      box-shadow: none;
+      letter-spacing: .06em;
+    }
+    .primary:hover { background: var(--seal-deep); box-shadow: none; }
+    .section-head { margin-top: 29px; padding-bottom: 8px; border-bottom: 1px solid #dcd9d2; }
+    .section-head h2 { font-size: 18px; letter-spacing: .06em; }
+    .section-head span, .link-btn { color: var(--muted); }
+    .summary {
+      gap: 0;
+      padding: 0;
+      border: 1px solid #dcd9d2;
+      border-radius: 4px;
+      background: #fdfcf9;
+    }
+    .summary > div { padding: 17px 5px; border: 0; border-radius: 0; background: transparent; }
+    .summary div + div { border-left: 1px solid #e3e0da; }
+    .summary strong, .month-summary strong, .year-month strong, .vow-stat strong, .settlement strong {
+      font-family: Georgia,"Times New Roman","Source Han Serif SC",serif;
+    }
+    .quote {
+      margin: 20px 0 0;
+      padding: 15px 17px 15px 43px;
+      border: 0;
+      border-left: 2px solid var(--seal);
+      border-radius: 0;
+      color: var(--ink-2);
+      background: #f0eee8;
+    }
+    .quote::before { left: 14px; color: rgba(227,154,91,.7); }
+    .page-head { margin-bottom: 15px; padding: 29px 0 13px; border-bottom: 1px solid #dcd9d2; }
+    .page-head h1 { margin-bottom: 3px; font-size: 28px; letter-spacing: .06em; }
+    .page-head p { color: var(--muted); }
+    .ledger-switch {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 14px;
+      padding: 0;
+      border: 0;
+      border-bottom: 1px solid #dcd9d2;
+      border-radius: 0;
+      background: transparent;
+    }
+    .ledger-switch button {
+      position: relative;
+      width: auto;
+      min-height: 43px;
+      padding: 0 3px;
+      border-radius: 0;
+      color: var(--muted);
+      background: transparent;
+      letter-spacing: .08em;
+    }
+    .ledger-switch button.active { color: var(--ink); background: transparent; box-shadow: none; }
+    .ledger-switch button.active::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      bottom: -1px;
+      left: 0;
+      height: 2px;
+      background: var(--seal);
+    }
+    .calendar {
+      overflow: hidden;
+      border: 1px solid #dcd9d2;
+      border-radius: 4px;
+      background: #fdfcf9;
+      box-shadow: none;
+    }
+    .calendar-toolbar { min-height: 58px; border-bottom: 1px solid #e1ded8; background: #f0eee8; }
+    .calendar-toolbar h2 { font-size: 18px; letter-spacing: .04em; }
+    .month-button { margin: 0; border: 0; border-radius: 0; color: #6d6962; }
+    .month-button:hover { border: 0; color: var(--seal-deep); background: rgba(227,154,91,.07); }
+    .month-summary { padding: 14px 16px; border-bottom-color: #e4e1db; background: #fbfaf7; }
+    .weekdays { padding-top: 10px; border-bottom: 1px solid #ece9e3; color: var(--muted); }
+    .calendar-grid { padding: 6px 7px 10px; }
+    .calendar-day { min-height: 63px; border: 0; border-radius: 2px; }
+    .calendar-day.has-entry:hover { background: rgba(227,154,91,.065); }
+    .calendar-day.today { background: #f5f1ea; box-shadow: inset 0 0 0 1px rgba(227,154,91,.72); }
+    .calendar-day .day-number { color: var(--ink-2); }
+    .calendar-day .day-net { height: 23px; min-width: 29px; margin-top: 5px; border-radius: 2px; background: #f0eee8 !important; }
+    .calendar-day .day-net.positive { color: var(--jade); background: rgba(79,116,102,.09) !important; }
+    .calendar-day .day-net.negative { color: #a95847; background: rgba(169,88,71,.08) !important; }
+    .calendar-day .day-net.zero { color: var(--gold); background: rgba(154,113,61,.08) !important; }
+    .calendar-legend { border-top: 1px solid #e4e1db; color: var(--muted); }
+    .calendar-legend span::before { width: 6px; height: 6px; }
+    .year-grid { gap: 8px; padding: 14px; }
+    .year-month {
+      min-height: 90px;
+      border: 1px solid #e1ded8;
+      border-radius: 3px;
+      background: #fbfaf7;
+    }
+    .year-month:hover { border-color: rgba(227,154,91,.68); background: #fffdf9; }
+    .year-month.current { box-shadow: inset 0 -2px 0 var(--seal); }
+    .vow-list { gap: 10px; }
+    .vow-detail {
+      padding: 19px;
+      border: 1px solid #dcd9d2;
+      border-radius: 4px;
+      background: #fdfcf9;
+    }
+    .vow-detail.completed { border-color: #dec8ae; background: #fbf7f1; }
+    .vow-status::before { border-radius: 50%; transform: none; }
+    .completion-reward {
+      border: 1px solid var(--seal);
+      border-radius: 50%;
+      color: var(--seal-deep);
+      background: #fffaf4;
+      box-shadow: none;
+      font-family: "Source Han Serif SC","Noto Serif SC",serif;
+    }
+    .vow-progress { height: 4px; border-radius: 0; background: #e9e6df; }
+    .vow-progress i { border-radius: 0; background: var(--seal); }
+    .vow-grid { gap: 8px; }
+    .vow-stat { padding: 13px; border: 1px solid #e5e2dc; border-radius: 3px; background: #f7f5f0; }
+    .vow-note { border-top-color: #e3e0da; }
+    .outline { border: 1px solid #b8b3aa; border-radius: 3px; color: var(--ink-2); background: transparent; }
+    .outline:hover { color: var(--seal-deep); border-color: var(--seal); background: rgba(227,154,91,.05); }
+    .principles { gap: 0; border: 1px solid #dcd9d2; border-radius: 4px; background: #fdfcf9; }
+    .principle { padding: 14px; border: 0; border-bottom: 1px solid #e5e2dc; border-radius: 0; background: transparent; }
+    .principle:last-child { border-bottom: 0; }
+    .principle b { border-color: var(--seal); border-radius: 2px; color: var(--seal-deep); }
+    .nav {
+      bottom: 0;
+      width: min(100%,460px);
+      gap: 0;
+      padding: 5px 8px max(5px,env(safe-area-inset-bottom));
+      border: 0;
+      border-top: 1px solid #d8d5ce;
+      border-radius: 0;
+      background: rgba(253,252,249,.97);
+      box-shadow: 0 -5px 18px rgba(45,42,37,.055);
+      backdrop-filter: blur(16px);
+    }
+    .nav button {
+      min-height: 57px;
+      border: 0;
+      border-radius: 3px;
+      color: var(--muted);
+      background: transparent;
+      font-family: "Source Han Serif SC","Noto Serif SC",serif;
+      font-size: 12px;
+    }
+    .nav button:last-child { border-right: 0; }
+    .nav button.active { color: var(--seal-deep); background: rgba(227,154,91,.07); }
+    .nav button.active::after { top: auto; bottom: 3px; width: 18px; height: 2px; border-radius: 0; background: var(--seal); }
+    .nav-icon { display: block; width: 21px; height: 20px; margin-bottom: 2px; }
+    .overlay { background: rgba(36,35,33,.45); backdrop-filter: blur(4px); }
+    .sheet {
+      border: 1px solid #d4d0c7;
+      border-bottom: 0;
+      border-radius: 9px 9px 0 0;
+      background: #f7f6f2;
+      box-shadow: 0 -16px 42px rgba(36,35,33,.18);
+    }
+    .handle { height: 3px; border-radius: 3px; background: #cbc7be; }
+    .close { border: 1px solid #dedbd4; border-radius: 3px; background: #eceae4; }
+    input, textarea { border-color: #d8d5ce; border-radius: 3px; color: var(--ink); background: #fffefa; }
+    input:focus, textarea:focus { border-color: rgba(227,154,91,.9); }
+    .remove { border: 1px solid #dedbd4; border-radius: 3px; background: #eceae4; }
+    .settlement { border: 1px solid #d8d5ce; border-radius: 4px; background: #fdfcf9; }
+    .toast { border-radius: 3px; color: #fff; background: rgba(36,35,33,.94); }
+    @media (max-width: 380px) {
+      .topbar { margin: 0; padding-right: 16px; padding-left: 16px; }
+      main { padding-right: 16px; padding-left: 16px; }
+      .date-head h1 { font-size: 32px; }
+      .nav { width: 100%; bottom: 0; }
+    }
+    @media (min-width: 700px) {
+      body { padding: 24px 0; }
+      .shell { min-height: calc(100vh - 48px); border: 1px solid #d8d5ce; border-radius: 5px; }
+      .app { min-height: calc(100vh - 48px); }
+      .nav { bottom: 24px; border-radius: 0 0 5px 5px; }
+      .sheet { margin-bottom: 24px; border-bottom: 1px solid #d4d0c7; border-radius: 9px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation: none !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="app">
+      <header class="topbar">
+        <div class="brand"><span class="brand-seal" aria-hidden="true">格</span><strong>功过格</strong></div>
+        <span class="privacy">仅存于本机</span>
+      </header>
+
+      <section class="view active" id="todayView" aria-label="今日">
+        <main>
+          <div class="date-head">
+            <div class="kicker">修善断恶 · 命自我立</div>
+            <h1 id="dateTitle">九月三十日</h1>
+            <p id="weekday">星期三 · 夜省</p>
+            <span class="status-pill" id="todayStatus">今日尚未登记</span>
+          </div>
+
+          <section class="vow-card" aria-label="当前善愿">
+            <div class="vow-top"><div><div class="vow-label">当前善愿</div><h2 id="homeVowName">行三千善</h2></div><div class="vow-count"><strong id="homeCurrent">126</strong><span>累计功数</span></div></div>
+            <div class="progress"><i id="homeProgress" style="width:4.2%"></i></div>
+            <div class="progress-meta"><span id="homeStart">始于 2026.08.18</span><span id="homeRemaining">尚余 2874</span></div>
+          </section>
+
+          <button class="primary today-action" id="startReflection">开始今日自省</button>
+
+          <div class="section-head"><h2>今日结算</h2><span>善则记数，恶则退除</span></div>
+          <section class="summary" aria-label="今日结算">
+            <div class="good"><strong id="todayGood">0</strong><span>今日功数</span></div>
+            <div class="fault"><strong id="todayFault">0</strong><span>今日过数</span></div>
+            <div><strong id="todayNet">0</strong><span>今日净数</span></div>
+          </section>
+
+          <blockquote class="quote">所行之事，逐日登记；善则记数，恶则退除。<cite>《了凡四训·立命之学》</cite></blockquote>
+        </main>
+      </section>
+
+      <section class="view" id="ledgerView" aria-label="功过簿">
+        <main>
+          <div class="page-head"><h1>功过簿</h1><p>逐日登记，功过明白。</p></div>
+          <div class="ledger-switch" role="tablist" aria-label="功过簿展示范围">
+            <button class="active" type="button" role="tab" aria-selected="true" data-ledger-mode="month">本月</button>
+            <button type="button" role="tab" aria-selected="false" data-ledger-mode="year">全年</button>
+          </div>
+          <div class="calendar ledger-panel" id="monthLedgerPanel">
+            <div class="calendar-toolbar">
+              <button class="month-button" type="button" id="previousMonth">上月</button>
+              <h2 id="calendarTitle">2026年9月</h2>
+              <button class="month-button" type="button" id="nextMonth">下月</button>
+            </div>
+            <div class="month-summary"><span>本月净数</span><strong id="monthNet">0</strong><small id="monthRecordCount">已登记 0 日</small></div>
+            <div class="weekdays" aria-hidden="true"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+            <div class="calendar-grid" id="calendarGrid" aria-label="每月功过日历"></div>
+            <div class="calendar-legend"><span class="legend-good">净功</span><span class="legend-fault">净过</span><span class="legend-even">持平</span><span>未登记</span></div>
+          </div>
+          <div class="calendar ledger-panel" id="yearLedgerPanel" hidden>
+            <div class="calendar-toolbar">
+              <button class="month-button" type="button" id="previousYear">上一年</button>
+              <h2 id="yearTitle">2026年</h2>
+              <button class="month-button" type="button" id="nextYear">下一年</button>
+            </div>
+            <div class="year-grid" id="yearGrid" aria-label="全年每月净数"></div>
+            <div class="calendar-legend"><span class="legend-good">净功</span><span class="legend-fault">净过</span><span class="legend-even">持平</span><span>未登记</span></div>
+          </div>
+        </main>
+      </section>
+
+      <section class="view" id="vowView" aria-label="善愿">
+        <main>
+          <div class="page-head"><h1>善愿</h1><p>一愿既立，日日勉行。</p></div>
+          <div class="vow-list" id="vowList" aria-label="善愿列表"></div>
+          <div class="section-head"><h2>记格之法</h2></div>
+          <div class="principles">
+            <div class="principle"><b>一</b><div><strong>逐日登记</strong><span>每日所行善恶，务求如实。</span></div></div>
+            <div class="principle"><b>二</b><div><strong>善记功数</strong><span>善行计入愿行累计。</span></div></div>
+            <div class="principle"><b>三</b><div><strong>恶退功数</strong><span>过失从累计中如数退除。</span></div></div>
+          </div>
+        </main>
+      </section>
+    </div>
+
+    <nav class="nav" aria-label="主要导航">
+      <button class="active" type="button" data-view="todayView"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7.5"></circle><path d="M12 8.2v4.2l2.8 1.7"></path></svg></span>今日</button>
+      <button type="button" data-view="ledgerView"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4.5h11.5A2.5 2.5 0 0 1 19 7v12.5H7.2A2.2 2.2 0 0 1 5 17.3V4.5Z"></path><path d="M8 4.5v15M8 8h7M8 12h7"></path></svg></span>功过簿</button>
+      <button type="button" data-view="vowView"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 20c4.8-2.7 7.3-6 7.3-9.4A3.9 3.9 0 0 0 12 8.7a3.9 3.9 0 0 0-7.3 1.9C4.7 14 7.2 17.3 12 20Z"></path><path d="M12 8.7V4"></path></svg></span>善愿</button>
+    </nav>
+  </div>
+
+  <div class="overlay" id="reflectionOverlay" role="dialog" aria-modal="true" aria-labelledby="reflectionTitle">
+    <form class="sheet" id="reflectionForm">
+      <div class="handle"></div>
+      <div class="sheet-head"><div><h2 id="reflectionTitle">今日功过</h2><p id="reflectionDate">九月三十日 · 夜省</p></div><button class="close" type="button" data-close aria-label="关闭">×</button></div>
+      <section class="entry-section">
+        <div class="entry-title"><h3>今日之功</h3><small>功数</small></div>
+        <div class="entry-list" id="goodList"></div>
+        <button class="add-row" type="button" data-add="good">＋ 再记一功</button>
+      </section>
+      <section class="entry-section">
+        <div class="entry-title"><h3>今日之过</h3><small>过数</small></div>
+        <div class="entry-list" id="faultList"></div>
+        <button class="add-row" type="button" data-add="fault">＋ 再记一过</button>
+      </section>
+      <div class="settlement"><div><strong id="formGood">0</strong><span>功数</span></div><div><strong id="formFault">0</strong><span>过数</span></div><div><strong id="formNet">0</strong><span>净数</span></div></div>
+      <button class="primary" type="submit" style="margin-top:14px">完成今日登记</button>
+    </form>
+  </div>
+
+  <div class="overlay" id="detailOverlay" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+    <section class="sheet">
+      <div class="handle"></div>
+      <div class="sheet-head"><div><h2 id="detailTitle">当日功过</h2><p id="detailSummary"></p></div><button class="close" type="button" data-close aria-label="关闭">×</button></div>
+      <div class="section-head"><h2>今日之功</h2></div><ul class="detail-list" id="detailGood"></ul>
+      <div class="section-head"><h2>今日之过</h2></div><ul class="detail-list" id="detailFault"></ul>
+    </section>
+  </div>
+
+  <div class="overlay" id="vowOverlay" role="dialog" aria-modal="true" aria-labelledby="vowEditTitle">
+    <form class="sheet" id="vowForm">
+      <div class="handle"></div>
+      <div class="sheet-head"><div><h2 id="vowEditTitle">调整善愿</h2><p>立一善愿，日日勉行。</p></div><button class="close" type="button" data-close aria-label="关闭">×</button></div>
+      <label for="vowNameInput">善愿名称</label><input id="vowNameInput" required maxlength="20">
+      <label for="vowTargetInput">目标善数</label><input id="vowTargetInput" type="number" min="1" max="1000000" required>
+      <label for="vowReasonInput">立愿缘起</label><textarea id="vowReasonInput" maxlength="120"></textarea>
+      <button class="primary" id="vowSubmit" type="submit" style="margin-top:16px">保存善愿</button>
+    </form>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const STORAGE_KEY = 'gongguo-grid-v1';
+    const todayKey = (date = new Date()) => [date.getFullYear(), String(date.getMonth()+1).padStart(2,'0'), String(date.getDate()).padStart(2,'0')].join('-');
+    const demoState = {
+      opening: 126,
+      activeVowId: 'vow-original',
+      pendingNextVow: false,
+      vows: [{ id:'vow-original', name:'行三千善', target:3000, opening:126, start:'2026-08-18', createdAt:'2026-08-18T12:00:00+08:00', reason:'愿从今日开始，改过迁善，利益他人。', completedAt:null }],
+      days: {
+        '2026-09-27': { goods:[{text:'替邻居代收并送回重物',points:1}], faults:[], completed:true, vowId:'vow-original' },
+        '2026-09-28': { goods:[{text:'耐心听完家人的话，没有打断',points:1},{text:'归还多找的零钱',points:1}], faults:[{text:'因急躁说话语气生硬',points:1}], completed:true, vowId:'vow-original' },
+        '2026-09-29': { goods:[{text:'帮助同事完成急务',points:1},{text:'节省食物，没有浪费',points:1}], faults:[], completed:true, vowId:'vow-original' }
+      }
+    };
+    const createVowId = () => `vow-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+    function normalizeState(raw){
+      const next=raw&&typeof raw==='object'?raw:structuredClone(demoState);
+      next.days=next.days&&typeof next.days==='object'?next.days:{};
+      if(!Array.isArray(next.vows)||!next.vows.length){
+        const legacy=next.vow||demoState.vows[0];
+        next.opening=Number(legacy.opening)||0;
+        const start=legacy.start||todayKey();
+        next.vows=[{id:'vow-original',name:String(legacy.name||'行善积德'),target:Math.max(1,Number(legacy.target)||1),opening:Number(legacy.opening)||0,start,createdAt:legacy.createdAt||`${start}T12:00:00`,reason:String(legacy.reason||''),completedAt:null}];
+        next.activeVowId='vow-original';
+      }else{
+        next.opening=Number(next.opening??next.vow?.opening)||0;
+        next.vows=next.vows.map((vow,index)=>{const start=vow.start||todayKey();return{id:vow.id||`vow-${index+1}`,name:String(vow.name||'未命名善愿'),target:Math.max(1,Number(vow.target)||1),opening:Number(vow.opening??(index===0?next.opening:0))||0,start,createdAt:vow.createdAt||`${start}T12:00:00`,reason:String(vow.reason||''),completedAt:vow.completedAt||null};});
+        if(next.activeVowId&&!next.vows.some(vow=>vow.id===next.activeVowId))next.activeVowId=next.vows.find(vow=>!vow.completedAt)?.id||null;
+      }
+      next.pendingNextVow=next.pendingNextVow===true;
+      const fallbackVowId=next.vows[0]?.id||null;
+      Object.values(next.days).forEach(day=>{if(!Object.prototype.hasOwnProperty.call(day,'vowId'))day.vowId=fallbackVowId;});
+      delete next.vow;
+      return next;
+    }
+    let state;
+    try { state = normalizeState(JSON.parse(localStorage.getItem(STORAGE_KEY))); }
+    catch { state = structuredClone(demoState); }
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+    let draft = { goods:[], faults:[] };
+    let draftVowId = null;
+    let editingVowId = null;
+    let autoVowPromptShown = false;
+    const expandedCompletedVows = new Set();
+    let calendarCursor = new Date();
+    calendarCursor.setHours(12,0,0,0);
+    calendarCursor.setDate(1);
+    let ledgerMode = 'month';
+    const $ = id => document.getElementById(id);
+    const esc = value => String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    const pointSum = items => items.reduce((sum,item)=>sum + Math.max(0,Number(item.points)||0),0);
+    const formatDate = key => new Intl.DateTimeFormat('zh-CN',{month:'long',day:'numeric',weekday:'short'}).format(new Date(key+'T12:00:00'));
+    function vowProgress(vow){
+      return Math.max(0,(Number(vow?.opening)||0)+Object.values(state.days).filter(day=>day.vowId===vow?.id).reduce((sum,day)=>sum+pointSum(day.goods)-pointSum(day.faults),0));
+    }
+    function vowFaults(vow){ return Object.values(state.days).filter(day=>day.vowId===vow?.id).reduce((sum,day)=>sum+pointSum(day.faults),0); }
+    function activeVow(){ const vow=state.vows.find(vow=>vow.id===state.activeVowId)||null;return vow&&!isVowComplete(vow)?vow:null; }
+    function isVowComplete(vow){ return !!vow?.completedAt||vowProgress(vow)>=Number(vow?.target); }
+    function syncVowCompletions(promptForNext=false){
+      const completed=[];
+      state.vows.forEach(vow=>{if(!vow.completedAt&&vowProgress(vow)>=vow.target){vow.completedAt=todayKey();completed.push(vow);}});
+      if(completed.some(vow=>vow.id===state.activeVowId))state.activeVowId=null;
+      if(completed.length&&promptForNext)state.pendingNextVow=true;
+      return completed;
+    }
+    function save(){ const completed=syncVowCompletions(true);localStorage.setItem(STORAGE_KEY,JSON.stringify(state));render();return completed; }
+    function toast(text){ const el=$('toast');el.textContent=text;el.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.classList.remove('show'),1800); }
+    function allRows(){
+      const rows=[]; let running=Number(state.opening)||0;
+      Object.keys(state.days).sort().forEach(date=>{const d=state.days[date],good=pointSum(d.goods),fault=pointSum(d.faults);running+=good-fault;rows.push({date,good,fault,net:good-fault,running,completed:d.completed});});
+      return rows;
+    }
+    function renderCalendar(){
+      const year=calendarCursor.getFullYear(),month=calendarCursor.getMonth();
+      $('calendarTitle').textContent=`${year}年${month+1}月`;
+      const monthRecords=Object.entries(state.days).filter(([date])=>date.startsWith(`${year}-${String(month+1).padStart(2,'0')}-`));
+      const monthNet=monthRecords.reduce((sum,[,record])=>sum+pointSum(record.goods)-pointSum(record.faults),0);
+      $('monthNet').textContent=monthRecords.length?(monthNet>0?`+${monthNet}`:String(monthNet)):'—';
+      $('monthNet').className=monthRecords.length?(monthNet>0?'positive':monthNet<0?'negative':'zero') : '';
+      $('monthRecordCount').textContent=`已登记 ${monthRecords.length} 日`;
+      const firstOffset=(new Date(year,month,1).getDay()+6)%7;
+      const daysInMonth=new Date(year,month+1,0).getDate();
+      const cells=[];
+      for(let i=0;i<firstOffset;i++)cells.push('<span class="calendar-spacer" aria-hidden="true"></span>');
+      for(let day=1;day<=daysInMonth;day++){
+        const key=[year,String(month+1).padStart(2,'0'),String(day).padStart(2,'0')].join('-');
+        const record=state.days[key];
+        const net=record?pointSum(record.goods)-pointSum(record.faults):null;
+        const netClass=net===null?'':net>0?'positive':net<0?'negative':'zero';
+        const netText=net===null?'—':net>0?`+${net}`:String(net);
+        const isToday=key===todayKey();
+        cells.push(`<button class="calendar-day ${record?'has-entry':''} ${isToday?'today':''}" type="button" ${record?`data-date="${key}"`:''} ${record?'':`aria-label="${month+1}月${day}日，未登记"`}><span class="day-number">${day}</span><span class="day-net ${netClass}">${netText}</span></button>`);
+      }
+      $('calendarGrid').innerHTML=cells.join('');
+      document.querySelectorAll('.calendar-day[data-date]').forEach(day=>day.addEventListener('click',()=>showDetail(day.dataset.date)));
+    }
+    function renderYear(){
+      const year=calendarCursor.getFullYear();
+      $('yearTitle').textContent=`${year}年`;
+      const now=new Date();
+      $('yearGrid').innerHTML=Array.from({length:12},(_,month)=>{
+        const prefix=`${year}-${String(month+1).padStart(2,'0')}-`;
+        const records=Object.entries(state.days).filter(([date])=>date.startsWith(prefix));
+        const net=records.reduce((sum,[,record])=>sum+pointSum(record.goods)-pointSum(record.faults),0);
+        const netClass=records.length?(net>0?'positive':net<0?'negative':'zero') : '';
+        const netText=records.length?(net>0?`+${net}`:String(net)):'—';
+        const current=year===now.getFullYear()&&month===now.getMonth();
+        return `<button class="year-month ${current?'current':''}" type="button" data-month="${month}" aria-label="${year}年${month+1}月，${records.length?`净数 ${netText}`:'未登记'}"><span>${month+1}月</span><strong class="${netClass}">${netText}</strong><small>${records.length?`已登记 ${records.length} 日`:'未登记'}</small></button>`;
+      }).join('');
+      document.querySelectorAll('.year-month').forEach(button=>button.addEventListener('click',()=>{
+        calendarCursor.setMonth(Number(button.dataset.month),1);
+        setLedgerMode('month');
+      }));
+    }
+    function setLedgerMode(mode){
+      ledgerMode=mode;
+      $('monthLedgerPanel').hidden=mode!=='month';
+      $('yearLedgerPanel').hidden=mode!=='year';
+      document.querySelectorAll('[data-ledger-mode]').forEach(button=>{
+        const selected=button.dataset.ledgerMode===mode;
+        button.classList.toggle('active',selected);
+        button.setAttribute('aria-selected',String(selected));
+      });
+      mode==='month'?renderCalendar():renderYear();
+    }
+    function currentTotal(){ const rows=allRows(); return rows.length ? rows.at(-1).running : Number(state.opening)||0; }
+    function currentFaults(){ return Object.values(state.days).reduce((s,d)=>s+pointSum(d.faults),0); }
+    function renderVows(){
+      const formatter=new Intl.DateTimeFormat('zh-CN',{year:'numeric',month:'long',day:'numeric'});
+      const sortedVows=state.vows.map((vow,index)=>({vow,index})).sort((a,b)=>{
+        const timeDiff=new Date(b.vow.createdAt||`${b.vow.start}T12:00:00`).getTime()-new Date(a.vow.createdAt||`${a.vow.start}T12:00:00`).getTime();
+        return timeDiff||b.index-a.index;
+      }).map(item=>item.vow);
+      $('vowList').innerHTML=sortedVows.map((vow,index)=>{
+        const current=vowProgress(vow),remaining=Math.max(0,vow.target-current),complete=isVowComplete(vow),isActive=vow.id===state.activeVowId;
+        const percent=Math.min(100,Math.max(0,current/vow.target*100));
+        const status=complete?'已满愿':isActive?'当前进行中':'待继续';
+        const dates=`<span>${formatter.format(new Date(vow.start+'T12:00:00'))}立愿</span>${vow.completedAt?`<span>${formatter.format(new Date(vow.completedAt+'T12:00:00'))}满愿</span>`:''}`;
+        const expanded=complete&&expandedCompletedVows.has(vow.id),bodyId=`vow-body-${index}`;
+        const reward=complete?'<span class="completion-reward" role="img" aria-label="满愿奖励徽章" title="满愿奖励">✦</span>':'';
+        const summary=`<div class="vow-detail-head"><div><span class="vow-status">${status}</span><h2>${esc(vow.name)}</h2><span class="small vow-dates">${dates}</span></div>${complete?`<div class="vow-title-side">${reward}<span class="vow-fold-label">${expanded?'收起详情':'展开详情'}</span></div>`:''}</div>`;
+        const body=`<div class="vow-progress" aria-label="善愿进度 ${Math.round(percent)}%"><i style="width:${percent}%"></i></div><div class="vow-grid"><div class="vow-stat"><span>目标善数</span><strong>${vow.target}</strong></div><div class="vow-stat"><span>已积善数</span><strong>${current}</strong></div><div class="vow-stat"><span>累计过数</span><strong>${vowFaults(vow)}</strong></div><div class="vow-stat"><span>${complete?'满愿状态':'尚余善数'}</span><strong>${complete?'圆满':remaining}</strong></div></div><p class="vow-note">${esc(vow.reason||'愿心已立，日日勉行。')}</p>${complete?'':`<div class="vow-actions">${!isActive?`<button class="outline" type="button" data-activate-vow="${esc(vow.id)}">设为当前</button>`:''}<button class="outline" type="button" data-edit-vow="${esc(vow.id)}">调整善愿</button></div>`}`;
+        return `<section class="vow-detail ${complete?'completed':''}" data-vow-card="${esc(vow.id)}">${complete?`<button class="vow-summary-toggle" type="button" data-toggle-vow="${esc(vow.id)}" aria-expanded="${expanded}" aria-controls="${bodyId}">${summary}</button>`:summary}<div class="vow-body" id="${bodyId}" ${complete&&!expanded?'hidden':''}>${body}</div></section>`;
+      }).join('');
+      document.querySelectorAll('[data-toggle-vow]').forEach(button=>button.addEventListener('click',()=>{const id=button.dataset.toggleVow;expandedCompletedVows.has(id)?expandedCompletedVows.delete(id):expandedCompletedVows.add(id);renderVows();}));
+      document.querySelectorAll('[data-edit-vow]').forEach(button=>button.addEventListener('click',()=>openVowForm(button.dataset.editVow)));
+      document.querySelectorAll('[data-activate-vow]').forEach(button=>button.addEventListener('click',()=>{state.activeVowId=button.dataset.activateVow;save();toast('已设为当前善愿');}));
+    }
+    function setupDate(){
+      const now=new Date(); const parts=new Intl.DateTimeFormat('zh-CN',{month:'long',day:'numeric'}).format(now);
+      $('dateTitle').textContent=parts; $('weekday').textContent=new Intl.DateTimeFormat('zh-CN',{weekday:'long'}).format(now)+' · 夜省';
+      $('reflectionDate').textContent=parts+' · 夜省';
+    }
+    function render(){
+      const newlyCompleted=syncVowCompletions();
+      if(newlyCompleted.length)localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+      const vow=activeVow()||state.vows.at(-1),total=vow?vowProgress(vow):0,complete=vow?isVowComplete(vow):false;
+      const remain=vow?Math.max(0,vow.target-total):0,percent=vow?Math.min(100,Math.max(0,total/vow.target*100)):0;
+      $('homeVowName').textContent=vow?.name||'尚未立愿'; $('homeCurrent').textContent=total; $('homeProgress').style.width=percent+'%';
+      $('homeStart').textContent=vow?'始于 '+vow.start.replaceAll('-','.'):'可在善愿页新增'; $('homeRemaining').textContent=complete?'已满愿':'尚余 '+remain;
+      renderVows();
+      const today=state.days[todayKey()]||{goods:[],faults:[],completed:false}; const g=pointSum(today.goods),f=pointSum(today.faults);
+      $('todayGood').textContent=g; $('todayFault').textContent=f; $('todayNet').textContent=g-f;
+      $('todayStatus').textContent=today.completed?'今日已登记':'今日尚未登记'; $('todayStatus').classList.toggle('done',!!today.completed); $('startReflection').textContent=today.completed?'今日自省':'开始今日自省';
+      setLedgerMode(ledgerMode);
+    }
+    function showView(id){ document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===id));window.scrollTo({top:0,behavior:'smooth'});render(); }
+    document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
+    document.querySelectorAll('[data-ledger-mode]').forEach(button=>button.addEventListener('click',()=>setLedgerMode(button.dataset.ledgerMode)));
+    $('previousMonth').addEventListener('click',()=>{calendarCursor.setMonth(calendarCursor.getMonth()-1);renderCalendar();});
+    $('nextMonth').addEventListener('click',()=>{calendarCursor.setMonth(calendarCursor.getMonth()+1);renderCalendar();});
+    $('previousYear').addEventListener('click',()=>{calendarCursor.setFullYear(calendarCursor.getFullYear()-1);renderYear();});
+    $('nextYear').addEventListener('click',()=>{calendarCursor.setFullYear(calendarCursor.getFullYear()+1);renderYear();});
+    function openOverlay(id){$(id).classList.add('open');setTimeout(()=>$(id).querySelector('input,textarea,button')?.focus(),50);}
+    function closeOverlays(){document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('open'));}
+    document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',closeOverlays));
+    document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeOverlays();}));
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeOverlays();});
+    function newItem(){return{text:'',points:0};}
+    function startReflection(){ const day=state.days[todayKey()],vow=activeVow();draftVowId=day?.vowId??(vow&&!isVowComplete(vow)?vow.id:null);draft={goods:day?.goods?.map(x=>({...x}))||[newItem()],faults:day?.faults?.map(x=>({...x}))||[newItem()]};if(!draft.goods.length)draft.goods=[newItem()];if(!draft.faults.length)draft.faults=[newItem()];renderDraft();openOverlay('reflectionOverlay'); }
+    function renderDraft(){
+      const list=(kind,id)=>{$(id).innerHTML=draft[kind].map((item,i)=>`<div class="entry-item"><input value="${esc(item.text)}" data-kind="${kind}" data-index="${i}" data-field="text" aria-label="${kind==='goods'?'善行':'过失'}内容" placeholder="${kind==='goods'?'记一件实际善行':'如实记下过失'}"><input type="number" min="0" max="10000" value="${item.points}" data-kind="${kind}" data-index="${i}" data-field="points" aria-label="${kind==='goods'?'功数':'过数'}"><button class="remove" type="button" data-remove="${kind}" data-index="${i}" aria-label="删除">×</button></div>`).join('');};
+      list('goods','goodList');list('faults','faultList');
+      document.querySelectorAll('[data-field]').forEach(input=>input.addEventListener('input',()=>{
+        const {kind,index,field}=input.dataset,item=draft[kind][Number(index)],row=input.closest('.entry-item');
+        if(field==='text'){
+          item.text=input.value;
+          item.points=item.text.trim()?Math.max(1,Number(item.points)||1):0;
+          row.querySelector('[data-field="points"]').value=String(item.points);
+        }else{
+          item.points=item.text.trim()?Math.max(1,Number(input.value)||1):0;
+          input.value=String(item.points);
+        }
+        updateSettlement();
+      }));
+      document.querySelectorAll('[data-remove]').forEach(btn=>btn.addEventListener('click',()=>{const kind=btn.dataset.remove;draft[kind].splice(Number(btn.dataset.index),1);if(!draft[kind].length)draft[kind].push(newItem());renderDraft();}));
+      updateSettlement();
+    }
+    function updateSettlement(){const g=pointSum(draft.goods.filter(x=>x.text.trim())),f=pointSum(draft.faults.filter(x=>x.text.trim()));$('formGood').textContent=g;$('formFault').textContent=f;$('formNet').textContent=g-f;}
+    document.querySelectorAll('[data-add]').forEach(btn=>btn.addEventListener('click',()=>{draft[btn.dataset.add==='good'?'goods':'faults'].push(newItem());renderDraft();}));
+    $('startReflection').addEventListener('click',startReflection);
+    $('reflectionForm').addEventListener('submit',e=>{e.preventDefault();const clean=kind=>draft[kind].filter(x=>x.text.trim()).map(x=>({text:x.text.trim(),points:Math.max(1,Number(x.points)||1)}));state.days[todayKey()]={goods:clean('goods'),faults:clean('faults'),completed:true,vowId:draftVowId};closeOverlays();const completed=save();toast(completed.length?`${completed[0].name}已满愿，请立下下一愿`:'今日功过已登记');if(completed.length)setTimeout(maybeOpenNextVowPrompt,220);});
+    function showDetail(date){const d=state.days[date]||{goods:[],faults:[]},g=pointSum(d.goods),f=pointSum(d.faults),net=g-f;$('detailTitle').textContent=formatDate(date);$('detailSummary').textContent=`功 ${g} · 过 ${f} · 净 ${net>0?'+':''}${net}`;const items=(arr,empty)=>arr.length?arr.map(x=>`<li>${esc(x.text)}<small>${x.points} ${empty==='无功可记'?'功':'过'}</small></li>`).join(''):`<li style="color:var(--muted)">${empty}</li>`;$('detailGood').innerHTML=items(d.goods,'无功可记');$('detailFault').innerHTML=items(d.faults,'无过可记');openOverlay('detailOverlay');}
+    function openVowForm(vowId=null,automatic=false){
+      editingVowId=vowId;
+      const vow=state.vows.find(item=>item.id===vowId);
+      if(vow&&isVowComplete(vow)){toast('已满愿的善愿不可再调整');return;}
+      if(automatic)autoVowPromptShown=true;
+      $('vowEditTitle').textContent=vow?'调整善愿':automatic?'善愿已满 · 立下一愿':'新增善愿';
+      $('vowSubmit').textContent=vow?'保存善愿':'立下善愿';
+      $('vowNameInput').value=vow?.name||'';
+      $('vowTargetInput').value=vow?.target||'';
+      $('vowReasonInput').value=vow?.reason||'';
+      openOverlay('vowOverlay');
+    }
+    function maybeOpenNextVowPrompt(){if(state.pendingNextVow&&!autoVowPromptShown&&!document.querySelector('.overlay.open'))openVowForm(null,true);}
+    $('vowForm').addEventListener('submit',e=>{
+      e.preventDefault();
+      const name=$('vowNameInput').value.trim(),target=Math.max(1,Number($('vowTargetInput').value)||1),reason=$('vowReasonInput').value.trim();
+      let message='善愿已更新';
+      if(editingVowId){
+        const vow=state.vows.find(item=>item.id===editingVowId);
+        if(!vow||isVowComplete(vow)){closeOverlays();toast('已满愿的善愿不可再调整');return;}
+        vow.name=name;vow.target=target;vow.reason=reason;
+      }else{
+        const vow={id:createVowId(),name,target,opening:0,start:todayKey(),createdAt:new Date().toISOString(),reason,completedAt:null};
+        state.vows.push(vow);state.activeVowId=vow.id;state.pendingNextVow=false;message='新善愿已立';
+      }
+      closeOverlays();
+      const completed=save();
+      toast(completed.length?`${completed[0].name}已满愿，请立下下一愿`:message);
+      if(completed.length)setTimeout(maybeOpenNextVowPrompt,220);
+    });
+    async function registerWebMCP(){const context=document.modelContext;if(!context?.registerTool)return;try{
+      await context.registerTool({name:'read_merit_progress',title:'查看善愿进度',description:'读取当前善愿、目标善数、累计功数和尚余善数。',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true,untrustedContentHint:false},execute:async()=>{const current=activeVow()||state.vows.at(-1);const vows=state.vows.map(vow=>({id:vow.id,name:vow.name,target:vow.target,current:vowProgress(vow),remaining:Math.max(0,vow.target-vowProgress(vow)),completed:isVowComplete(vow)}));return{vow:current?.name||null,target:current?.target||0,current:current?vowProgress(current):0,remaining:current?Math.max(0,current.target-vowProgress(current)):0,completed:current?isVowComplete(current):false,activeVowId:state.activeVowId,vows};}});
+      await context.registerTool({name:'record_daily_merits_and_faults',title:'登记今日功过',description:'批量登记今天实际发生的功与过，并完成今日结算。',inputSchema:{type:'object',properties:{goods:{type:'array',items:{type:'object',properties:{text:{type:'string'},points:{type:'integer',minimum:1}},required:['text','points'],additionalProperties:false}},faults:{type:'array',items:{type:'object',properties:{text:{type:'string'},points:{type:'integer',minimum:1}},required:['text','points'],additionalProperties:false}}},required:['goods','faults'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute:async input=>{if(!input||!Array.isArray(input.goods)||!Array.isArray(input.faults))throw new Error('goods 和 faults 必须是数组');const clean=arr=>arr.map(x=>({text:String(x.text||'').trim(),points:Number(x.points)})).filter(x=>x.text&&Number.isInteger(x.points)&&x.points>0);const existing=state.days[todayKey()],vow=activeVow();state.days[todayKey()]={goods:clean(input.goods),faults:clean(input.faults),completed:true,vowId:existing?.vowId??vow?.id??null};const completed=save(),d=state.days[todayKey()],linked=state.vows.find(item=>item.id===d.vowId);if(completed.length)setTimeout(maybeOpenNextVowPrompt,220);return{date:todayKey(),good:pointSum(d.goods),fault:pointSum(d.faults),net:pointSum(d.goods)-pointSum(d.faults),vow:linked?.name||null,vowCurrent:linked?vowProgress(linked):null,vowCompleted:linked?isVowComplete(linked):false,rewardGranted:completed.some(item=>item.id===linked?.id)};}});
+    }catch(error){console.warn('WebMCP unavailable',error);}}
+    setupDate();render();
+    if(location.hash==='#ledger'||location.hash==='#ledger-year')showView('ledgerView');
+    if(location.hash==='#ledger-year')setLedgerMode('year');
+    if(location.hash==='#vows')showView('vowView');
+    setTimeout(maybeOpenNextVowPrompt,220);
+    registerWebMCP();
+  </script>
+</body>
+</html>
