@@ -1,5 +1,6 @@
 var store = require('../../utils/store');
 var dateUtils = require('../../utils/date');
+var share = require('../../utils/share');
 var entrySequence = 0;
 
 function entryKey() {
@@ -55,10 +56,15 @@ Page({
   },
 
   onShow: function () {
+    share.showMenu(true);
     var tabBar = this.getTabBar && this.getTabBar();
     if (tabBar) tabBar.setData({ selected: 0, hidden: this.data.reflectionVisible });
     this.renderPage();
   },
+
+  onShareAppMessage: share.appMessage,
+
+  onShareTimeline: share.timeline,
 
   renderPage: function () {
     var state = store.loadState();

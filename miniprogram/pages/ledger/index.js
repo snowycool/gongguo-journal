@@ -1,5 +1,6 @@
 var store = require('../../utils/store');
 var dateUtils = require('../../utils/date');
+var share = require('../../utils/share');
 
 function displayNet(net, hasRecord) {
   if (!hasRecord) return '—';
@@ -30,10 +31,13 @@ Page({
   },
 
   onShow: function () {
+    share.showMenu(false);
     var tabBar = this.getTabBar && this.getTabBar();
     if (tabBar) tabBar.setData({ selected: 1 });
     this.renderLedger();
   },
+
+  onShareAppMessage: share.appMessage,
 
   changeMode: function (event) {
     this.setData({ mode: event.currentTarget.dataset.mode });

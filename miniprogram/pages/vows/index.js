@@ -1,5 +1,6 @@
 var store = require('../../utils/store');
 var dateUtils = require('../../utils/date');
+var share = require('../../utils/share');
 
 function findTierIndex(options, name, target) {
   var targetText = String(target || '');
@@ -36,6 +37,7 @@ Page({
   },
 
   onShow: function () {
+    share.showMenu(false);
     var tabBar = this.getTabBar && this.getTabBar();
     if (tabBar) tabBar.setData({ selected: 2, hidden: this.data.formVisible });
     this.renderVows();
@@ -43,6 +45,8 @@ Page({
       this.openNewVow(true);
     }
   },
+
+  onShareAppMessage: share.appMessage,
 
   renderVows: function () {
     var state = store.loadState();
