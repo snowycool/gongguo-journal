@@ -240,7 +240,75 @@
 
 .entry-text {
   flex: 1;
+  min-width: 0;
   padding: 0 20rpx;
+}
+
+.entry-suggestions {
+  /* 与文字输入框同宽：扣除分数框、删除按钮和两处间距。 */
+  width: calc(100% - 236rpx);
+  margin-top: 8rpx;
+  overflow: hidden;
+  border: 1rpx solid #d8d5ce;
+  border-radius: 6rpx;
+  background: #fffefa;
+}
+
+.suggestions-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20rpx;
+  color: #8a857d;
+  background: #efede8;
+  font-size: 22rpx;
+}
+
+.suggestions-head > text {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.suggestions-close {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 64rpx;
+  width: 64rpx;
+  min-width: 0;
+  max-width: 64rpx;
+  margin: 0 0 0 auto;
+  padding: 12rpx 0;
+  color: #9a713d;
+  background: transparent;
+  font-size: 22rpx;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.suggestion-option {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 12rpx 20rpx;
+  overflow: hidden;
+  border-radius: 0;
+  color: #4e4b46;
+  background: transparent;
+  font-size: 26rpx;
+  line-height: 36rpx;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.suggestion-option + .suggestion-option {
+  border-top: 1rpx solid #ece9e3;
+}
+
+.suggestion-hover {
+  color: #9a713d;
+  background: #f5f1ea;
 }
 
 .entry-picker {

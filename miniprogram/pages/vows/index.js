@@ -1,6 +1,7 @@
 var store = require('../../utils/store');
 var dateUtils = require('../../utils/date');
 var share = require('../../utils/share');
+var entryHistory = require('../../utils/entry-history');
 
 function findTierIndex(options, name, target) {
   var targetText = String(target || '');
@@ -286,11 +287,12 @@ Page({
     var page = this;
     wx.showModal({
       title: '清空本机记录',
-      content: '将删除全部功过与善愿，且无法恢复。确定继续吗？',
+      content: '将删除全部功过、善愿与输入历史，且无法恢复。确定继续吗？',
       confirmColor: '#a95847',
       success: function (result) {
         if (!result.confirm) return;
         try {
+          entryHistory.clear();
           wx.removeStorageSync(store.STORAGE_KEY);
           page.expanded = {};
           page.renderVows();

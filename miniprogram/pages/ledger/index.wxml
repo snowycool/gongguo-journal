@@ -5,15 +5,15 @@
   </view>
 
   <view class="ledger-tabs">
-    <button class="ledger-tab {{mode === 'month' ? 'active' : ''}}" data-mode="month" bindtap="changeMode">本月</button>
-    <button class="ledger-tab {{mode === 'year' ? 'active' : ''}}" data-mode="year" bindtap="changeMode">全年</button>
+    <button class="ledger-tab {{mode === 'month' ? 'active' : ''}}" size="mini" hover-class="ledger-tab-hover" data-mode="month" bindtap="changeMode">本月</button>
+    <button class="ledger-tab {{mode === 'year' ? 'active' : ''}}" size="mini" hover-class="ledger-tab-hover" data-mode="year" bindtap="changeMode">全年</button>
   </view>
 
   <view wx:if="{{mode === 'month'}}" class="ledger-panel">
     <view class="calendar-toolbar">
-      <button class="toolbar-button" bindtap="previousMonth">上月</button>
+      <button class="toolbar-button" size="mini" hover-class="toolbar-button-hover" bindtap="previousMonth"><text class="toolbar-arrow">‹</text><text>上月</text></button>
       <view class="toolbar-title">{{year}}年{{month + 1}}月</view>
-      <button class="toolbar-button" bindtap="nextMonth">下月</button>
+      <button class="toolbar-button" size="mini" hover-class="toolbar-button-hover" bindtap="nextMonth"><text>下月</text><text class="toolbar-arrow">›</text></button>
     </view>
     <view class="month-summary">
       <text>本月净数</text>
@@ -24,13 +24,18 @@
       <text wx:for="{{weekdays}}" wx:key="*this">{{item}}</text>
     </view>
     <view class="calendar-grid">
-      <view wx:for="{{calendarCells}}" wx:key="key" class="calendar-cell {{item.blank ? 'blank' : ''}} {{item.today ? 'today' : ''}} {{item.hasEntry ? 'has-entry' : ''}}" data-date="{{item.date}}" data-entry="{{item.hasEntry}}" bindtap="openDayDetail">
+      <view wx:for="{{calendarCells}}" wx:key="key" class="calendar-cell {{item.blank ? 'blank' : ''}} {{item.today ? 'today' : ''}} {{item.hasEntry ? 'has-entry' : ''}}" hover-class="{{item.hasEntry ? 'calendar-cell-hover' : 'none'}}" data-date="{{item.date}}" data-entry="{{item.hasEntry}}" bindtap="openDayDetail">
         <block wx:if="{{!item.blank}}">
-          <text class="day-number">{{item.day}}</text>
-          <text class="day-net {{item.netClass}}">{{item.netText}}</text>
+          <view class="day-tile {{item.netClass}}">
+            <text class="day-number">{{item.day}}</text>
+            <text wx:if="{{item.today}}" class="today-dot"></text>
+            <text class="day-net">{{item.netText}}</text>
+            <text wx:if="{{item.hasEntry}}" class="day-detail-arrow">›</text>
+          </view>
         </block>
       </view>
     </view>
+    <view class="calendar-hint">点击已登记日期，查看当日明细</view>
     <view class="legend">
       <text><text class="legend-dot good"></text>净功</text>
       <text><text class="legend-dot fault"></text>净过</text>
@@ -41,12 +46,13 @@
 
   <view wx:else class="ledger-panel">
     <view class="calendar-toolbar">
-      <button class="toolbar-button" bindtap="previousYear">上年</button>
+      <button class="toolbar-button" size="mini" hover-class="toolbar-button-hover" bindtap="previousYear"><text class="toolbar-arrow">‹</text><text>上年</text></button>
       <view class="toolbar-title">{{year}}年</view>
-      <button class="toolbar-button" bindtap="nextYear">下年</button>
+      <button class="toolbar-button" size="mini" hover-class="toolbar-button-hover" bindtap="nextYear"><text>下年</text><text class="toolbar-arrow">›</text></button>
     </view>
     <view class="year-grid">
-      <button wx:for="{{yearMonths}}" wx:key="month" class="year-month {{item.current ? 'current' : ''}}" data-month="{{item.month}}" bindtap="selectYearMonth">
+      <button wx:for="{{yearMonths}}" wx:key="month" class="year-month {{item.current ? 'current' : ''}}" size="mini" hover-class="year-month-hover" data-month="{{item.month}}" bindtap="selectYearMonth">
+        <text class="year-month-arrow">›</text>
         <text class="year-month-name">{{item.month + 1}}月</text>
         <text class="year-month-net {{item.netClass}}">{{item.netText}}</text>
         <text class="year-month-count">{{item.count ? '已登记 ' + item.count + ' 日' : '未登记'}}</text>

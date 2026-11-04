@@ -32,7 +32,7 @@
         <view class="vow-reason">{{item.reason || '愿心已立，日日勉行。'}}</view>
         <view wx:if="{{!item.complete}}" class="vow-actions">
           <button wx:if="{{!item.active}}" class="outline-button" data-id="{{item.id}}" catchtap="activateVow">设为当前</button>
-          <button class="outline-button" data-id="{{item.id}}" catchtap="openEditVow">调整善愿</button>
+          <button class="primary-button vow-edit-action" size="mini" hover-class="button-hover" data-id="{{item.id}}" catchtap="openEditVow">调整善愿</button>
         </view>
       </view>
     </view>

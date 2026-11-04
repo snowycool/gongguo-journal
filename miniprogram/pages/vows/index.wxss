@@ -149,12 +149,40 @@
 
 .vow-actions {
   display: flex;
+  justify-content: center;
   gap: 14rpx;
   margin-top: 22rpx;
 }
 
 .vow-actions .outline-button {
   flex: 1;
+}
+
+.vows-page .vow-edit-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 1 360rpx;
+  box-sizing: border-box;
+  width: 360rpx;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 96rpx;
+  margin: 0;
+  padding: 0 24rpx;
+  border: 0;
+  border-radius: 6rpx;
+  color: #ffffff;
+  background: #d78645;
+  font-size: 30rpx;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 3rpx;
+  white-space: nowrap;
+}
+
+.vows-page .vow-edit-action.button-hover {
+  background: #c97b3c;
 }
 
 .vow-empty {

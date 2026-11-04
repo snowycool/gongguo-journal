@@ -62,7 +62,7 @@
 </view>
 
 <view wx:if="{{reflectionVisible}}" class="overlay" catchtap="closeReflection">
-  <scroll-view class="sheet reflection-sheet" scroll-y catchtap="noop">
+  <scroll-view class="sheet reflection-sheet" scroll-y catchtap="dismissEntrySuggestions">
     <view class="sheet-handle"></view>
     <view class="sheet-head">
       <view>
@@ -75,15 +75,21 @@
       <view class="entry-section">
         <view class="entry-head"><text>今日之功</text><text>功数</text></view>
         <view class="entry-list">
-          <view wx:for="{{draft.goods}}" wx:key="_key" class="entry-item">
-            <input class="entry-text" value="{{item.text}}" maxlength="100" placeholder="记一件实际善行" data-kind="goods" data-index="{{index}}" bindinput="onEntryTextInput" />
-            <picker class="entry-picker" mode="selector" range="{{pointOptions}}" value="{{item.points > 0 ? item.points - 1 : 0}}" disabled="{{item.points < 1}}" data-kind="goods" data-index="{{index}}" bindchange="onEntryPointsChange">
-              <view class="entry-picker-control {{item.points < 1 ? 'disabled' : ''}}">
-                <text class="picker-value">{{item.points}}</text>
-                <text class="picker-arrow">⌄</text>
-              </view>
-            </picker>
-            <button class="remove-button" data-kind="goods" data-index="{{index}}" catchtap="removeEntry">×</button>
+          <view wx:for="{{draft.goods}}" wx:key="_key" class="entry-block">
+            <view class="entry-item">
+              <input class="entry-text" value="{{item.text}}" maxlength="100" placeholder="记一件实际善行" data-kind="goods" data-index="{{index}}" cursor-spacing="180" confirm-type="done" catchtap="onEntryFocus" bindfocus="onEntryFocus" bindinput="onEntryTextInput" bindconfirm="dismissEntrySuggestions" />
+              <picker class="entry-picker" mode="selector" range="{{pointOptions}}" value="{{item.points > 0 ? item.points - 1 : 0}}" disabled="{{item.points < 1}}" data-kind="goods" data-index="{{index}}" bindchange="onEntryPointsChange">
+                <view class="entry-picker-control {{item.points < 1 ? 'disabled' : ''}}">
+                  <text class="picker-value">{{item.points}}</text>
+                  <text class="picker-arrow">⌄</text>
+                </view>
+              </picker>
+              <button class="remove-button" data-kind="goods" data-index="{{index}}" catchtap="removeEntry">×</button>
+            </view>
+            <view wx:if="{{entrySuggestions.kind === 'goods' && entrySuggestions.key === item._key && entrySuggestions.items.length}}" class="entry-suggestions" catchtap="noop">
+              <view class="suggestions-head"><text>最近记录 · 点击填入</text><view class="suggestions-close" catchtap="dismissEntrySuggestions">收起</view></view>
+              <button wx:for="{{entrySuggestions.items}}" wx:for-item="suggestion" wx:for-index="suggestionIndex" wx:key="*this" class="suggestion-option" hover-class="suggestion-hover" data-suggestion="{{suggestionIndex}}" catchtap="chooseEntrySuggestion">{{suggestion}}</button>
+            </view>
           </view>
         </view>
         <button class="add-button" data-kind="goods" catchtap="addEntry">＋ 再记一功</button>
@@ -92,15 +98,21 @@
       <view class="entry-section">
         <view class="entry-head"><text>今日之过</text><text>过数</text></view>
         <view class="entry-list">
-          <view wx:for="{{draft.faults}}" wx:key="_key" class="entry-item">
-            <input class="entry-text" value="{{item.text}}" maxlength="100" placeholder="如实记下过失" data-kind="faults" data-index="{{index}}" bindinput="onEntryTextInput" />
-            <picker class="entry-picker" mode="selector" range="{{pointOptions}}" value="{{item.points > 0 ? item.points - 1 : 0}}" disabled="{{item.points < 1}}" data-kind="faults" data-index="{{index}}" bindchange="onEntryPointsChange">
-              <view class="entry-picker-control {{item.points < 1 ? 'disabled' : ''}}">
-                <text class="picker-value">{{item.points}}</text>
-                <text class="picker-arrow">⌄</text>
-              </view>
-            </picker>
-            <button class="remove-button" data-kind="faults" data-index="{{index}}" catchtap="removeEntry">×</button>
+          <view wx:for="{{draft.faults}}" wx:key="_key" class="entry-block">
+            <view class="entry-item">
+              <input class="entry-text" value="{{item.text}}" maxlength="100" placeholder="如实记下过失" data-kind="faults" data-index="{{index}}" cursor-spacing="180" confirm-type="done" catchtap="onEntryFocus" bindfocus="onEntryFocus" bindinput="onEntryTextInput" bindconfirm="dismissEntrySuggestions" />
+              <picker class="entry-picker" mode="selector" range="{{pointOptions}}" value="{{item.points > 0 ? item.points - 1 : 0}}" disabled="{{item.points < 1}}" data-kind="faults" data-index="{{index}}" bindchange="onEntryPointsChange">
+                <view class="entry-picker-control {{item.points < 1 ? 'disabled' : ''}}">
+                  <text class="picker-value">{{item.points}}</text>
+                  <text class="picker-arrow">⌄</text>
+                </view>
+              </picker>
+              <button class="remove-button" data-kind="faults" data-index="{{index}}" catchtap="removeEntry">×</button>
+            </view>
+            <view wx:if="{{entrySuggestions.kind === 'faults' && entrySuggestions.key === item._key && entrySuggestions.items.length}}" class="entry-suggestions" catchtap="noop">
+              <view class="suggestions-head"><text>最近记录 · 点击填入</text><view class="suggestions-close" catchtap="dismissEntrySuggestions">收起</view></view>
+              <button wx:for="{{entrySuggestions.items}}" wx:for-item="suggestion" wx:for-index="suggestionIndex" wx:key="*this" class="suggestion-option" hover-class="suggestion-hover" data-suggestion="{{suggestionIndex}}" catchtap="chooseEntrySuggestion">{{suggestion}}</button>
+            </view>
           </view>
         </view>
         <button class="add-button" data-kind="faults" catchtap="addEntry">＋ 再记一过</button>

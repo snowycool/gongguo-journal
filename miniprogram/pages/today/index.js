@@ -1,6 +1,7 @@
 var store = require('../../utils/store');
 var dateUtils = require('../../utils/date');
 var share = require('../../utils/share');
+var entryHistory = require('../../utils/entry-history');
 var entrySequence = 0;
 
 function entryKey() {
@@ -43,6 +44,7 @@ Page({
     reflectionVisible: false,
     pointOptions: pointOptions(),
     draft: { goods: [newItem()], faults: [newItem()] },
+    entrySuggestions: { kind: '', key: '', items: [] },
     draftSummary: { good: 0, fault: 0, net: 0, netText: '0' }
   },
 
@@ -113,10 +115,13 @@ Page({
     var goods = day && day.goods && day.goods.length ? cloneItems(day.goods) : [newItem()];
     var faults = day && day.faults && day.faults.length ? cloneItems(day.faults) : [newItem()];
     this.state = state;
+    this.entryHistory = entryHistory.load(state.days);
+    this.entryEditOrder = { goods: [], faults: [] };
     this.draftVowId = day && Object.prototype.hasOwnProperty.call(day, 'vowId') ? day.vowId : active ? active.id : null;
     this.setTabBarHidden(true);
     this.setData({
       reflectionVisible: true,
+      entrySuggestions: { kind: '', key: '', items: [] },
       draft: { goods: goods, faults: faults }
     });
     this.updateDraftSummary();
@@ -124,7 +129,7 @@ Page({
 
   closeReflection: function () {
     this.setTabBarHidden(false);
-    this.setData({ reflectionVisible: false });
+    this.setData({ reflectionVisible: false, entrySuggestions: { kind: '', key: '', items: [] } });
   },
 
   setTabBarHidden: function (hidden) {
@@ -134,6 +139,62 @@ Page({
 
   noop: function () {},
 
+  dismissEntrySuggestions: function () {
+    if (this.data.entrySuggestions.key) {
+      this.setData({ entrySuggestions: { kind: '', key: '', items: [] } });
+    }
+  },
+
+  showEntrySuggestions: function (kind, item) {
+    this.setData({
+      entrySuggestions: {
+        kind: kind,
+        key: item._key,
+        items: entryHistory.suggest(this.entryHistory, kind, item.text)
+      }
+    });
+  },
+
+  trackEntryEdit: function (kind, key) {
+    if (!this.entryEditOrder) this.entryEditOrder = { goods: [], faults: [] };
+    this.entryEditOrder[kind] = this.entryEditOrder[kind].filter(function (value) { return value !== key; });
+    this.entryEditOrder[kind].push(key);
+  },
+
+  editedHistoryDay: function () {
+    var draft = this.data.draft;
+    var order = this.entryEditOrder || { goods: [], faults: [] };
+    function editedItems(kind) {
+      return order[kind].map(function (key) {
+        return draft[kind].find(function (item) { return item._key === key; });
+      }).filter(function (item) { return item && item.text.trim(); });
+    }
+    return { goods: editedItems('goods'), faults: editedItems('faults') };
+  },
+
+  onEntryFocus: function (event) {
+    var kind = event.currentTarget.dataset.kind;
+    var index = Number(event.currentTarget.dataset.index);
+    var list = this.data.draft[kind];
+    if (list && list[index]) this.showEntrySuggestions(kind, list[index]);
+  },
+
+  chooseEntrySuggestion: function (event) {
+    var suggestions = this.data.entrySuggestions;
+    var text = suggestions.items[Number(event.currentTarget.dataset.suggestion)];
+    if (typeof text !== 'string') return;
+    var kind = suggestions.kind;
+    var draft = this.data.draft;
+    var index = (draft[kind] || []).findIndex(function (item) { return item._key === suggestions.key; });
+    if (index < 0) return;
+    var next = { goods: cloneItems(draft.goods), faults: cloneItems(draft.faults) };
+    next[kind][index].text = text;
+    next[kind][index].points = Math.max(1, Number(next[kind][index].points) || 1);
+    this.trackEntryEdit(kind, suggestions.key);
+    this.setData({ draft: next, entrySuggestions: { kind: '', key: '', items: [] } });
+    this.updateDraftSummary();
+  },
+
   onEntryTextInput: function (event) {
     var kind = event.currentTarget.dataset.kind;
     var index = Number(event.currentTarget.dataset.index);
@@ -142,13 +203,16 @@ Page({
     var text = event.detail.value;
     list[index].text = text;
     list[index].points = text.trim() ? Math.max(1, Number(list[index].points) || 1) : 0;
+    this.trackEntryEdit(kind, list[index]._key);
     var next = { goods: cloneItems(draft.goods), faults: cloneItems(draft.faults) };
     next[kind] = list;
     this.setData({ draft: next });
     this.updateDraftSummary();
+    this.showEntrySuggestions(kind, list[index]);
   },
 
   onEntryPointsChange: function (event) {
+    this.dismissEntrySuggestions();
     var kind = event.currentTarget.dataset.kind;
     var index = Number(event.currentTarget.dataset.index);
     var optionIndex = Number(event.detail.value);
@@ -164,6 +228,7 @@ Page({
   },
 
   addEntry: function (event) {
+    this.dismissEntrySuggestions();
     var kind = event.currentTarget.dataset.kind;
     var draft = this.data.draft;
     var next = { goods: cloneItems(draft.goods), faults: cloneItems(draft.faults) };
@@ -172,6 +237,7 @@ Page({
   },
 
   removeEntry: function (event) {
+    this.dismissEntrySuggestions();
     var kind = event.currentTarget.dataset.kind;
     var index = Number(event.currentTarget.dataset.index);
     var draft = this.data.draft;
@@ -215,8 +281,9 @@ Page({
     try {
       var result = store.saveState(state, true);
       this.state = result.state;
+      this.entryHistory = entryHistory.remember(this.entryHistory, this.editedHistoryDay());
       this.setTabBarHidden(false);
-      this.setData({ reflectionVisible: false });
+      this.setData({ reflectionVisible: false, entrySuggestions: { kind: '', key: '', items: [] } });
       this.renderPage();
       if (result.completed.length) {
         wx.showToast({ title: '善愿已满，立下一愿', icon: 'none', duration: 1600 });
