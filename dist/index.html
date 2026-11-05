@@ -884,10 +884,20 @@
       font-family: "Source Han Serif SC","Noto Serif SC",serif;
     }
     .vow-progress { height: 4px; border-radius: 0; background: #e9e6df; }
-    .vow-progress i { border-radius: 0; background: var(--seal); }
-    .vow-grid { gap: 8px; }
-    .vow-stat { padding: 13px; border: 1px solid #e5e2dc; border-radius: 3px; background: #f7f5f0; }
-    .vow-note { border-top-color: #e3e0da; }
+    .vow-progress i { border-radius: 0; background: var(--jade); }
+    .vow-grid { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 0; margin-top: 21px; }
+    .vow-stat { min-width: 0; padding: 0 4px; border: 0; border-radius: 0; background: transparent; text-align: center; }
+    .vow-stat + .vow-stat { border-left: 1px solid #e3e0da; }
+    .vow-stat span { font-size: clamp(10px,3.05vw,13px); white-space: nowrap; }
+    .vow-stat strong { margin-top: 4px; font-size: clamp(20px,5.6vw,24px); line-height: 1.4; }
+    .vow-stat-current strong { color: var(--jade); }
+    .vow-stat strong.vow-number-long { font-size: clamp(16px,4.8vw,20px); }
+    .vow-calculation-note { margin: 15px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .vow-note { margin-top: 13px; border-top-color: #e3e0da; }
+    .vow-actions { display: flex; justify-content: center; }
+    .vow-actions .outline { flex: 1; min-width: 0; }
+    .vow-actions .vow-edit-action { flex: 0 1 210px; width: 210px; min-width: 0; min-height: 40px; padding: 8px 14px; border-radius: 3px; color: #fff; background: #d78645; letter-spacing: .1em; }
+    .vow-actions .vow-edit-action:hover { background: #c97b3c; }
     .outline { border: 1px solid #b8b3aa; border-radius: 3px; color: var(--ink-2); background: transparent; }
     .outline:hover { color: var(--seal-deep); border-color: var(--seal); background: rgba(227,154,91,.05); }
     .principles { gap: 0; border: 1px solid #dcd9d2; border-radius: 4px; background: #fdfcf9; }
@@ -1219,7 +1229,7 @@
         const expanded=complete&&expandedCompletedVows.has(vow.id),bodyId=`vow-body-${index}`;
         const reward=complete?'<span class="completion-reward" role="img" aria-label="满愿奖励徽章" title="满愿奖励">✦</span>':'';
         const summary=`<div class="vow-detail-head"><div><span class="vow-status">${status}</span><h2>${esc(vow.name)}</h2><span class="small vow-dates">${dates}</span></div>${complete?`<div class="vow-title-side">${reward}<span class="vow-fold-label">${expanded?'收起详情':'展开详情'}</span></div>`:''}</div>`;
-        const body=`<div class="vow-progress" aria-label="善愿进度 ${Math.round(percent)}%"><i style="width:${percent}%"></i></div><div class="vow-grid"><div class="vow-stat"><span>目标善数</span><strong>${vow.target}</strong></div><div class="vow-stat"><span>已积善数</span><strong>${current}</strong></div><div class="vow-stat"><span>累计过数</span><strong>${vowFaults(vow)}</strong></div><div class="vow-stat"><span>${complete?'满愿状态':'尚余善数'}</span><strong>${complete?'圆满':remaining}</strong></div></div><p class="vow-note">${esc(vow.reason||'愿心已立，日日勉行。')}</p>${complete?'':`<div class="vow-actions">${!isActive?`<button class="outline" type="button" data-activate-vow="${esc(vow.id)}">设为当前</button>`:''}<button class="outline" type="button" data-edit-vow="${esc(vow.id)}">调整善愿</button></div>`}`;
+        const body=`<div class="vow-progress" aria-label="善愿进度 ${Math.round(percent)}%"><i style="width:${percent}%"></i></div><div class="vow-grid"><div class="vow-stat"><span>目标善数</span><strong class="${vow.target>=1000000?'vow-number-long':''}">${vow.target}</strong></div><div class="vow-stat vow-stat-current"><span>已积善数</span><strong class="${current>=1000000?'vow-number-long':''}">${current}</strong></div><div class="vow-stat"><span>${complete?'满愿状态':'距满愿还差'}</span><strong class="${!complete&&remaining>=1000000?'vow-number-long':''}">${complete?'圆满':remaining}</strong></div></div><p class="vow-calculation-note">功过相抵后计入善愿。</p><p class="vow-note">${esc(vow.reason||'愿心已立，日日勉行。')}</p>${complete?'':`<div class="vow-actions">${!isActive?`<button class="outline" type="button" data-activate-vow="${esc(vow.id)}">设为当前</button>`:''}<button class="primary vow-edit-action" type="button" data-edit-vow="${esc(vow.id)}">调整善愿</button></div>`}`;
         return `<section class="vow-detail ${complete?'completed':''}" data-vow-card="${esc(vow.id)}">${complete?`<button class="vow-summary-toggle" type="button" data-toggle-vow="${esc(vow.id)}" aria-expanded="${expanded}" aria-controls="${bodyId}">${summary}</button>`:summary}<div class="vow-body" id="${bodyId}" ${complete&&!expanded?'hidden':''}>${body}</div></section>`;
       }).join('');
       document.querySelectorAll('[data-toggle-vow]').forEach(button=>button.addEventListener('click',()=>{const id=button.dataset.toggleVow;expandedCompletedVows.has(id)?expandedCompletedVows.delete(id):expandedCompletedVows.add(id);renderVows();}));

@@ -106,22 +106,27 @@
 
 .vow-progress view {
   height: 100%;
-  background: #e39a5b;
+  background: #4f7466;
+}
+
+.completed .vow-progress view {
+  background: #9a713d;
 }
 
 .vow-grid {
   display: flex;
-  flex-wrap: wrap;
-  gap: 14rpx;
-  margin-top: 26rpx;
+  margin-top: 38rpx;
 }
 
 .vow-stat {
-  width: calc(50% - 7rpx);
-  padding: 22rpx;
-  border: 1rpx solid #e5e2dc;
-  border-radius: 6rpx;
-  background: #f7f5f0;
+  flex: 1;
+  min-width: 0;
+  padding: 0 8rpx;
+  text-align: center;
+}
+
+.vow-stat + .vow-stat {
+  border-left: 1rpx solid #e3e0da;
 }
 
 .vow-stat text {
@@ -131,17 +136,34 @@
 .vow-stat text:first-child {
   color: #8a857d;
   font-size: 23rpx;
+  white-space: nowrap;
 }
 
 .vow-stat text:last-child {
-  margin-top: 4rpx;
+  margin-top: 8rpx;
   font-family: Georgia, serif;
-  font-size: 36rpx;
+  font-size: 42rpx;
   font-weight: 600;
+  line-height: 1.4;
+}
+
+.vow-stat-current text:last-child {
+  color: #4f7466;
+}
+
+.vow-stat-long text:last-child {
+  font-size: 36rpx;
+}
+
+.vow-calculation-note {
+  margin-top: 26rpx;
+  color: #8a857d;
+  font-size: 23rpx;
+  line-height: 1.5;
 }
 
 .vow-reason {
-  margin-top: 28rpx;
+  margin-top: 22rpx;
   padding-top: 24rpx;
   border-top: 1rpx solid #e3e0da;
   color: #4e4b46;
@@ -167,7 +189,7 @@
   width: 360rpx;
   max-width: 100%;
   min-width: 0;
-  min-height: 96rpx;
+  min-height: 64rpx;
   margin: 0;
   padding: 0 24rpx;
   border: 0;

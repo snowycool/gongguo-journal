@@ -24,11 +24,11 @@
       <view wx:if="{{!item.complete || item.expanded}}" class="vow-body">
         <view class="vow-progress"><view style="width: {{item.percent}}%;"></view></view>
         <view class="vow-grid">
-          <view class="vow-stat"><text>目标善数</text><text>{{item.target}}</text></view>
-          <view class="vow-stat"><text>已积善数</text><text>{{item.current}}</text></view>
-          <view class="vow-stat"><text>累计过数</text><text>{{item.faults}}</text></view>
-          <view class="vow-stat"><text>{{item.complete ? '满愿状态' : '距满愿还差'}}</text><text>{{item.complete ? '圆满' : item.remaining + ' 功'}}</text></view>
+          <view class="vow-stat {{item.target >= 1000000 ? 'vow-stat-long' : ''}}"><text>目标善数</text><text>{{item.target}}</text></view>
+          <view class="vow-stat vow-stat-current {{item.current >= 1000000 ? 'vow-stat-long' : ''}}"><text>已积善数</text><text>{{item.current}}</text></view>
+          <view class="vow-stat {{!item.complete && item.remaining >= 1000000 ? 'vow-stat-long' : ''}}"><text>{{item.complete ? '满愿状态' : '距满愿还差'}}</text><text>{{item.complete ? '圆满' : item.remaining}}</text></view>
         </view>
+        <view class="vow-calculation-note">功过相抵后计入善愿。</view>
         <view class="vow-reason">{{item.reason || '愿心已立，日日勉行。'}}</view>
         <view wx:if="{{!item.complete}}" class="vow-actions">
           <button wx:if="{{!item.active}}" class="outline-button" data-id="{{item.id}}" catchtap="activateVow">设为当前</button>

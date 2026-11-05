@@ -61,7 +61,6 @@ Page({
         name: vow.name,
         target: vow.target,
         current: progress,
-        faults: store.vowFaults(state, vow),
         remaining: Math.max(0, vow.target - progress),
         percent: Math.min(100, Math.max(0, Math.round(progress / vow.target * 1000) / 10)),
         startText: dateUtils.fullDateText(vow.start),
