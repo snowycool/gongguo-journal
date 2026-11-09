@@ -15,6 +15,8 @@
 - 已满愿卡片默认折叠，展开可查看完整数据，不可再修改
 - 参考数字古籍阅读器的清雅界面：暖白纸面、宋体层级、细线分栏与橙色重点标记
 - 浏览器本地保存
+- 底部“今日、功过簿、善愿”支持屏幕左右滑动切换：左滑下一页、右滑上一页，首尾不循环；仍可点击底部导航，弹窗内操作和上下滚动不触发切页（小程序与网页原型均支持）
+- 切换时卡片沿方向轻移、缩放并淡入淡出，底部导航保持固定；点击与滑动使用相同过渡，连续操作不会叠加动画
 
 历史联想以“完成今日登记”成功保存的内容为准，取消的草稿不记入历史。旧记录按日期从近到远回填；启用后按实际输入／选择顺序更新，每类最多保留 200 条。点击空白输入框可选最近 5 条，输入关键词后按包含关系筛选。选择只填入文字，保留当前分数，空白条目默认记为 1。“清空本机记录”会同时清除输入历史。
 
@@ -22,12 +24,15 @@
 
 直接使用浏览器打开 `dist/index.html`。原型无需安装依赖。
 
+网页滑动切页测试：`node scripts/test-web-tab-swipe.js`。
+
 ## 微信小程序源码
 
 - 小程序目录：`miniprogram/`
 - 微信开发者工具工程配置：`project.config.json`
 - 导入与发布说明：`docs/wechat-release.md`
 - 静态校验：`node scripts/validate-miniprogram.js`
+- 滑动切页测试：`node scripts/test-tab-swipe.js`
 - 数据层测试：`node scripts/test-store.js`
 - 历史联想测试：`node scripts/test-entry-history.js`、`node scripts/test-entry-suggestions.js`
 

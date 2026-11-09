@@ -1,3 +1,4 @@
+var tabSwipe = require('../../utils/tab-swipe').createHandlers(2);
 var store = require('../../utils/store');
 var dateUtils = require('../../utils/date');
 var share = require('../../utils/share');
@@ -12,7 +13,14 @@ function findTierIndex(options, name, target) {
 }
 
 Page({
+  onTabTouchStart: tabSwipe.start,
+  onTabTouchMove: tabSwipe.move,
+  onTabTouchEnd: tabSwipe.end,
+  onTabTouchCancel: tabSwipe.cancel,
+  onHide: tabSwipe.hide,
+
   data: {
+    tabTransitionClass: '',
     vows: [],
     hasActiveVow: false,
     formVisible: false,
@@ -38,6 +46,7 @@ Page({
   },
 
   onShow: function () {
+    tabSwipe.show.call(this);
     share.showMenu(false);
     var tabBar = this.getTabBar && this.getTabBar();
     if (tabBar) tabBar.setData({ selected: 2, hidden: this.data.formVisible });

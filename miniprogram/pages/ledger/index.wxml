@@ -1,4 +1,4 @@
-<view class="page ledger-page">
+<view class="page ledger-page {{tabTransitionClass}}" bindtouchstart="onTabTouchStart" bindtouchmove="onTabTouchMove" bindtouchend="onTabTouchEnd" bindtouchcancel="onTabTouchCancel">
   <view class="page-head">
     <view class="page-title">功过簿</view>
     <view class="page-desc">按日省察，按月回望。</view>

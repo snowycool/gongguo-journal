@@ -1,4 +1,4 @@
-<view class="page vows-page">
+<view class="page vows-page {{tabTransitionClass}}" bindtouchstart="onTabTouchStart" bindtouchmove="onTabTouchMove" bindtouchend="onTabTouchEnd" bindtouchcancel="onTabTouchCancel">
   <view class="page-head">
     <view class="page-title">善愿</view>
     <view class="page-desc">一愿既立，日日勉行。</view>

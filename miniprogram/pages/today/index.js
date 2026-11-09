@@ -1,3 +1,4 @@
+var tabSwipe = require('../../utils/tab-swipe').createHandlers(0);
 var store = require('../../utils/store');
 var dateUtils = require('../../utils/date');
 var share = require('../../utils/share');
@@ -34,7 +35,14 @@ function netText(net) {
 }
 
 Page({
+  onTabTouchStart: tabSwipe.start,
+  onTabTouchMove: tabSwipe.move,
+  onTabTouchEnd: tabSwipe.end,
+  onTabTouchCancel: tabSwipe.cancel,
+  onHide: tabSwipe.hide,
+
   data: {
+    tabTransitionClass: '',
     dateKey: '',
     dateTitle: '',
     weekday: '',
@@ -58,6 +66,7 @@ Page({
   },
 
   onShow: function () {
+    tabSwipe.show.call(this);
     share.showMenu(true);
     var tabBar = this.getTabBar && this.getTabBar();
     if (tabBar) tabBar.setData({ selected: 0, hidden: this.data.reflectionVisible });

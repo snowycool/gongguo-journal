@@ -47,10 +47,32 @@
         repeating-linear-gradient(0deg,transparent 0 31px,rgba(23,29,27,.035) 32px);
       box-shadow: var(--shadow);
     }
-    .app { min-height: 100vh; padding-bottom: 88px; }
-    .view { display: none; animation: fade .22s ease; }
-    .view.active { display: block; }
-    @keyframes fade { from { opacity: .25; transform: translateY(5px); } }
+    .app { min-height: 100vh; padding-bottom: 88px; touch-action: pan-y; }
+    .view-stage { display: grid; overflow: hidden; }
+    .view-stage > .view { grid-area: 1 / 1; min-width: 0; }
+    .view { display: none; }
+    .view.active, .view.is-entering, .view.is-exiting { display: block; }
+    .view.is-entering, .view.is-exiting { will-change: transform, opacity; backface-visibility: hidden; pointer-events: none; }
+    .view.is-entering-forward { animation: view-enter-forward .28s cubic-bezier(.22,.61,.36,1) both; }
+    .view.is-entering-back { animation: view-enter-back .28s cubic-bezier(.22,.61,.36,1) both; }
+    .view.is-exiting-forward { animation: view-exit-forward .28s cubic-bezier(.4,0,.2,1) both; }
+    .view.is-exiting-back { animation: view-exit-back .28s cubic-bezier(.4,0,.2,1) both; }
+    @keyframes view-enter-forward {
+      from { opacity: 0; transform: translate3d(26px,0,0) scale(.985); }
+      to { opacity: 1; transform: translate3d(0,0,0) scale(1); }
+    }
+    @keyframes view-enter-back {
+      from { opacity: 0; transform: translate3d(-26px,0,0) scale(.985); }
+      to { opacity: 1; transform: translate3d(0,0,0) scale(1); }
+    }
+    @keyframes view-exit-forward {
+      from { opacity: 1; transform: translate3d(0,0,0) scale(1); }
+      to { opacity: 0; transform: translate3d(-26px,0,0) scale(.985); }
+    }
+    @keyframes view-exit-back {
+      from { opacity: 1; transform: translate3d(0,0,0) scale(1); }
+      to { opacity: 0; transform: translate3d(26px,0,0) scale(.985); }
+    }
     .topbar {
       display: flex; align-items: center; justify-content: space-between;
       padding: max(18px, env(safe-area-inset-top)) 20px 8px;
@@ -968,6 +990,7 @@
         <span class="privacy">仅存于本机</span>
       </header>
 
+      <div class="view-stage" id="viewStage">
       <section class="view active" id="todayView" aria-label="今日">
         <main>
           <div class="date-head">
@@ -1038,6 +1061,7 @@
           </div>
         </main>
       </section>
+      </div>
     </div>
 
     <nav class="nav" aria-label="主要导航">
@@ -1254,8 +1278,119 @@
       $('todayStatus').textContent=today.completed?'今日已登记':'今日尚未登记'; $('todayStatus').classList.toggle('done',!!today.completed); $('startReflection').textContent=today.completed?'今日自省':'开始今日自省';
       setLedgerMode(ledgerMode);
     }
-    function showView(id){ document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===id));window.scrollTo({top:0,behavior:'smooth'});render(); }
+    const viewTransitionDuration=280;
+    let viewTransition=null;
+    let viewTransitionTimer=null;
+    let pendingViewTransition=null;
+    function clearViewTransitionClasses(view){
+      view.classList.remove('is-entering','is-exiting','is-entering-forward','is-entering-back','is-exiting-forward','is-exiting-back');
+    }
+    function reducedMotion(){
+      return typeof window.matchMedia==='function'&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+    function setViewSelection(id){
+      document.querySelectorAll('.nav button').forEach(button=>button.classList.toggle('active',button.dataset.view===id));
+    }
+    function finishViewTransition(token){
+      if(!viewTransition||viewTransition.token!==token)return;
+      if(viewTransitionTimer!==null){clearTimeout(viewTransitionTimer);viewTransitionTimer=null;}
+      const completed=viewTransition;
+      viewTransition=null;
+      document.querySelectorAll('.view').forEach(view=>{
+        clearViewTransitionClasses(view);
+        view.classList.toggle('active',view===completed.to);
+      });
+      const queued=pendingViewTransition;
+      pendingViewTransition=null;
+      if(queued&&queued.id!==completed.to.id)showView(queued.id,queued.direction);
+    }
+    function showView(id,directionHint=0){
+      const views=Array.from(document.querySelectorAll('.view'));
+      const target=views.find(view=>view.id===id);
+      if(!target)return;
+      if(viewTransition){
+        if(id===viewTransition.to.id){pendingViewTransition=null;return;}
+        pendingViewTransition={id,direction:directionHint};
+        return;
+      }
+      const current=views.find(view=>view.classList.contains('active'));
+      if(current===target){setViewSelection(id);return;}
+      if(!current){
+        views.forEach(view=>{clearViewTransitionClasses(view);view.classList.toggle('active',view===target);});
+        setViewSelection(id);window.scrollTo({top:0,behavior:'smooth'});render();return;
+      }
+      const direction=directionHint===1||directionHint===-1?directionHint:(views.indexOf(target)>views.indexOf(current)?1:-1);
+      pendingViewTransition=null;
+      if(reducedMotion()){
+        views.forEach(view=>{clearViewTransitionClasses(view);view.classList.toggle('active',view===target);});
+        setViewSelection(id);window.scrollTo({top:0,behavior:'smooth'});render();return;
+      }
+      views.forEach(clearViewTransitionClasses);
+      current.classList.remove('active');
+      current.classList.add('is-exiting',direction>0?'is-exiting-forward':'is-exiting-back');
+      target.classList.add('active','is-entering',direction>0?'is-entering-forward':'is-entering-back');
+      setViewSelection(id);
+      window.scrollTo({top:0,behavior:'smooth'});
+      render();
+      const token={};
+      viewTransition={token,from:current,to:target,direction};
+      viewTransitionTimer=setTimeout(()=>finishViewTransition(token),viewTransitionDuration);
+    }
     document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
+
+    function setupSwipeNavigation(){
+      const surface=document.querySelector('.app');
+      if(!surface)return;
+      const navButtons=Array.from(document.querySelectorAll('.nav button'));
+      const swipeThreshold=56;
+      const maxSwipeDuration=1500;
+      let gesture=null;
+      const reset=()=>{gesture=null;};
+      const blockedTarget=target=>Boolean(target?.closest?.('button,input,textarea,select,a,[contenteditable="true"],[role="button"],[role="tab"]'));
+      const overlayOpen=()=>Boolean(document.querySelector('.overlay.open'));
+      surface.addEventListener('touchstart',event=>{
+        if(event.touches.length!==1||overlayOpen()||blockedTarget(event.target)){reset();return;}
+        const startIndex=navButtons.findIndex(button=>button.classList.contains('active'));
+        if(startIndex<0){reset();return;}
+        const touch=event.touches[0];
+        gesture={
+          identifier:touch.identifier,
+          startX:touch.clientX,
+          startY:touch.clientY,
+          startedAt:Date.now(),
+          startIndex:startIndex,
+          startView:navButtons[startIndex].dataset.view,
+          valid:true
+        };
+      },{passive:true});
+      surface.addEventListener('touchmove',event=>{
+        if(!gesture||event.touches.length!==1||event.touches[0].identifier!==gesture.identifier){reset();return;}
+        const touch=event.touches[0];
+        const dx=touch.clientX-gesture.startX;
+        const dy=touch.clientY-gesture.startY;
+        if(Date.now()-gesture.startedAt>maxSwipeDuration||Math.abs(dy)>10&&Math.abs(dy)>=Math.abs(dx))gesture.valid=false;
+      },{passive:true});
+      surface.addEventListener('touchend',event=>{
+        if(!gesture||!gesture.valid||event.touches.length!==0||event.changedTouches.length!==1){reset();return;}
+        const touch=event.changedTouches[0];
+        if(touch.identifier!==gesture.identifier){reset();return;}
+        const dx=touch.clientX-gesture.startX;
+        const dy=touch.clientY-gesture.startY;
+        const duration=Date.now()-gesture.startedAt;
+        const horizontalEnough=Math.abs(dx)>=swipeThreshold&&Math.abs(dx)>=Math.abs(dy)*1.5;
+        const direction=duration<=maxSwipeDuration&&horizontalEnough?(dx<0?1:-1):0;
+        const startIndex=gesture.startIndex;
+        const startView=gesture.startView;
+        reset();
+        if(!direction||overlayOpen())return;
+        const activeIndex=navButtons.findIndex(button=>button.classList.contains('active'));
+        if(activeIndex<0||activeIndex!==startIndex||navButtons[activeIndex].dataset.view!==startView)return;
+        const nextIndex=Math.max(0,Math.min(navButtons.length-1,startIndex+direction));
+        if(nextIndex!==activeIndex)showView(navButtons[nextIndex].dataset.view);
+      },{passive:true});
+      surface.addEventListener('touchcancel',reset,{passive:true});
+    }
+    setupSwipeNavigation();
     document.querySelectorAll('[data-ledger-mode]').forEach(button=>button.addEventListener('click',()=>setLedgerMode(button.dataset.ledgerMode)));
     $('previousMonth').addEventListener('click',()=>{calendarCursor.setMonth(calendarCursor.getMonth()-1);renderCalendar();});
     $('nextMonth').addEventListener('click',()=>{calendarCursor.setMonth(calendarCursor.getMonth()+1);renderCalendar();});

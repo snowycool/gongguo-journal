@@ -1,3 +1,4 @@
+var tabSwipe = require('../../utils/tab-swipe').createHandlers(1);
 var store = require('../../utils/store');
 var dateUtils = require('../../utils/date');
 var share = require('../../utils/share');
@@ -13,7 +14,14 @@ function netClass(net, hasRecord) {
 }
 
 Page({
+  onTabTouchStart: tabSwipe.start,
+  onTabTouchMove: tabSwipe.move,
+  onTabTouchEnd: tabSwipe.end,
+  onTabTouchCancel: tabSwipe.cancel,
+  onHide: tabSwipe.hide,
+
   data: {
+    tabTransitionClass: '',
     mode: 'month',
     year: 0,
     month: 0,
@@ -31,6 +39,7 @@ Page({
   },
 
   onShow: function () {
+    tabSwipe.show.call(this);
     share.showMenu(false);
     var tabBar = this.getTabBar && this.getTabBar();
     if (tabBar) tabBar.setData({ selected: 1 });

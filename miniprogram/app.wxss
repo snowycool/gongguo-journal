@@ -24,6 +24,41 @@ button::after {
   padding: 0 36rpx calc(150rpx + env(safe-area-inset-bottom));
 }
 
+.tab-card-leave-next, .tab-card-leave-previous,
+.tab-card-enter-next, .tab-card-enter-previous {
+  pointer-events: none;
+  transform-origin: 50% 35%;
+  background: #f4f3ef;
+  border-radius: 20rpx;
+}
+
+.tab-card-leave-next { animation: tab-card-leave-next 110ms ease-in both; }
+.tab-card-leave-previous { animation: tab-card-leave-previous 110ms ease-in both; }
+.tab-card-enter-next { animation: tab-card-enter-next 230ms cubic-bezier(.2,.75,.25,1) both; }
+.tab-card-enter-previous { animation: tab-card-enter-previous 230ms cubic-bezier(.2,.75,.25,1) both; }
+
+@keyframes tab-card-leave-next {
+  from { opacity: 1; transform: translateX(0) scale(1); }
+  to { opacity: .6; transform: translateX(-52rpx) scale(.985); }
+}
+@keyframes tab-card-leave-previous {
+  from { opacity: 1; transform: translateX(0) scale(1); }
+  to { opacity: .6; transform: translateX(52rpx) scale(.985); }
+}
+@keyframes tab-card-enter-next {
+  from { opacity: .55; transform: translateX(86rpx) scale(.985); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes tab-card-enter-previous {
+  from { opacity: .55; transform: translateX(-86rpx) scale(.985); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-card-leave-next, .tab-card-leave-previous,
+  .tab-card-enter-next, .tab-card-enter-previous { animation: none; }
+}
+
 .eyebrow {
   display: flex;
   align-items: center;

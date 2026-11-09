@@ -1,3 +1,5 @@
+var transition = require('../utils/tab-transition');
+
 Component({
   data: {
     selected: 0,
@@ -37,8 +39,9 @@ Component({
       var index = Number(event.currentTarget.dataset.index);
       var tab = this.data.tabs[index];
       if (!tab || index === this.data.selected) return;
-      this.setData({ selected: index });
-      wx.switchTab({ url: tab.pagePath });
+      var pages = getCurrentPages();
+      var page = pages[pages.length - 1];
+      transition.switchTab(this.data.selected, index, page);
     }
   }
 });

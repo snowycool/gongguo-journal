@@ -1,4 +1,4 @@
-<view class="page today-page">
+<view class="page today-page {{tabTransitionClass}}" bindtouchstart="onTabTouchStart" bindtouchmove="onTabTouchMove" bindtouchend="onTabTouchEnd" bindtouchcancel="onTabTouchCancel">
   <view class="date-head">
     <view class="eyebrow">修善断恶 · 命自我立</view>
     <view class="date-title">{{dateTitle}}</view>
