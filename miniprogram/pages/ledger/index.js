@@ -1,5 +1,6 @@
 var tabSwipe = require('../../utils/tab-swipe').createHandlers(1);
 var store = require('../../utils/store');
+var storageFeedback = require('../../utils/storage-feedback');
 var dateUtils = require('../../utils/date');
 var share = require('../../utils/share');
 
@@ -81,13 +82,18 @@ Page({
   },
 
   renderLedger: function () {
-    this.state = store.loadState();
+    var page = this;
+    var state = storageFeedback.load(this, function () { page.renderLedger(); });
+    if (!state) return;
+    this.state = state;
     if (this.data.mode === 'year') this.renderYear();
     else this.renderMonth();
   },
 
   renderMonth: function () {
-    var state = this.state || store.loadState();
+    var page = this;
+    var state = storageFeedback.current(this, function () { page.renderMonth(); });
+    if (!state) return;
     var year = this.data.year;
     var month = this.data.month;
     var summary = store.monthSummary(state, year, month);
@@ -133,7 +139,9 @@ Page({
   },
 
   renderYear: function () {
-    var state = this.state || store.loadState();
+    var page = this;
+    var state = storageFeedback.current(this, function () { page.renderYear(); });
+    if (!state) return;
     var year = this.data.year;
     var now = new Date();
     var months = [];
@@ -154,7 +162,9 @@ Page({
   openDayDetail: function (event) {
     if (!event.currentTarget.dataset.entry) return;
     var key = event.currentTarget.dataset.date;
-    var state = this.state || store.loadState();
+    var page = this;
+    var state = storageFeedback.current(this, function () { page.openDayDetail(event); });
+    if (!state) return;
     var day = state.days[key];
     if (!day) return;
     var summary = store.daySummary(day);

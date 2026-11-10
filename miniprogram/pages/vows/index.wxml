@@ -24,11 +24,11 @@
       <view wx:if="{{!item.complete || item.expanded}}" class="vow-body">
         <view class="vow-progress"><view style="width: {{item.percent}}%;"></view></view>
         <view class="vow-grid">
-          <view class="vow-stat {{item.target >= 1000000 ? 'vow-stat-long' : ''}}"><text>目标善数</text><text>{{item.target}}</text></view>
-          <view class="vow-stat vow-stat-current {{item.current >= 1000000 ? 'vow-stat-long' : ''}}"><text>已积善数</text><text>{{item.current}}</text></view>
+          <view class="vow-stat {{item.target >= 1000000 ? 'vow-stat-long' : ''}}"><text>目标功数</text><text>{{item.target}}</text></view>
+          <view class="vow-stat vow-stat-current {{item.current >= 1000000 ? 'vow-stat-long' : ''}}"><text>累计功数</text><text>{{item.current}}</text></view>
           <view class="vow-stat {{!item.complete && item.remaining >= 1000000 ? 'vow-stat-long' : ''}}"><text>{{item.complete ? '满愿状态' : '距满愿还差'}}</text><text>{{item.complete ? '圆满' : item.remaining}}</text></view>
         </view>
-        <view class="vow-calculation-note">功过相抵后计入善愿。</view>
+        <view class="vow-calculation-note">功过相抵后计入善愿，满愿多出的净功自动顺延。</view>
         <view class="vow-reason">{{item.reason || '愿心已立，日日勉行。'}}</view>
         <view wx:if="{{!item.complete}}" class="vow-actions">
           <button wx:if="{{!item.active}}" class="outline-button" data-id="{{item.id}}" catchtap="activateVow">设为当前</button>
@@ -78,14 +78,14 @@
         <input wx:else class="form-input combo-input" value="{{form.name}}" maxlength="20" placeholder="请输入" focus="{{nameFocus}}" data-field="name" bindblur="onCustomInputBlur" bindinput="onNameInput" />
         <view wx:if="{{!customTier && tierMenuField == 'name'}}" class="dropdown-menu">
           <view wx:for="{{vowTierOptions}}" wx:key="target" class="dropdown-option" data-index="{{index}}" data-field="name" catchtap="chooseVowTier">
-            <text>{{item.name}}</text><text>{{item.target}} 善</text>
+            <text>{{item.name}}</text><text>{{item.target}} 功</text>
           </view>
           <view class="dropdown-option custom" data-custom="true" data-field="name" catchtap="chooseVowTier"><text>自定义输入</text><text>自行填写名称与目标</text></view>
         </view>
       </view>
 
       <view class="form-label-row">
-        <text class="form-label">目标善数</text>
+        <text class="form-label">目标功数</text>
       </view>
       <view class="combo-field {{tierMenuField == 'target' ? 'open' : ''}}">
         <view wx:if="{{!customTier}}" class="form-input combo-input combo-control" data-field="target" catchtap="showTierMenu">
@@ -95,7 +95,7 @@
         <input wx:else class="form-input combo-input" type="number" value="{{form.target}}" placeholder="请输入" focus="{{targetFocus}}" data-field="target" bindblur="onCustomInputBlur" bindinput="onTargetInput" />
         <view wx:if="{{!customTier && tierMenuField == 'target'}}" class="dropdown-menu">
           <view wx:for="{{vowTierOptions}}" wx:key="target" class="dropdown-option" data-index="{{index}}" data-field="target" catchtap="chooseVowTier">
-            <text>{{item.target}} 善</text><text>{{item.name}}</text>
+            <text>{{item.target}} 功</text><text>{{item.name}}</text>
           </view>
           <view class="dropdown-option custom" data-custom="true" data-field="target" catchtap="chooseVowTier"><text>自定义输入</text><text>自行填写名称与目标</text></view>
         </view>

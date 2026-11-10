@@ -87,12 +87,9 @@ function normalizeState(raw) {
 }
 
 function loadState() {
-  var raw;
-  try {
-    raw = wx.getStorageSync(STORAGE_KEY);
-  } catch (error) {
-    raw = null;
-  }
+  // 读取失败时必须停止后续归一化与写回。否则临时读取异常会被当成
+  // “首次使用”，空状态随后可能覆盖设备上原有的功过记录。
+  var raw = wx.getStorageSync(STORAGE_KEY);
   var state = normalizeState(raw);
   syncVowCompletions(state, false);
   try {
@@ -105,9 +102,9 @@ function loadState() {
 
 function saveState(state, promptForNext) {
   var value = normalizeState(state);
-  var completed = syncVowCompletions(value, promptForNext === true);
+  var changes = syncVowCompletions(value, promptForNext === true);
   wx.setStorageSync(STORAGE_KEY, value);
-  return { state: value, completed: completed };
+  return { state: value, completed: changes.completed, reopened: changes.reopened };
 }
 
 function pointSum(items) {
@@ -123,15 +120,77 @@ function daySummary(day) {
   return { good: good, fault: fault, net: good - fault };
 }
 
+function addEvent(events, date, amount) {
+  var points = Math.floor(Number(amount) || 0);
+  if (!points) return;
+  events[date] = (events[date] || 0) + points;
+  if (!events[date]) delete events[date];
+}
+
+function chronologicalVows(state) {
+  return state.vows.slice().sort(function (a, b) {
+    var diff = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    return diff || state.vows.indexOf(a) - state.vows.indexOf(b);
+  });
+}
+
+// 每一愿只保留目标以内的功数，超出的净功按立愿顺序传给下一愿。
+// 结余以日期事件传递，因此修改旧记录时，后续善愿会同步增减并重新判定满愿。
+function settleVows(state) {
+  var ordered = chronologicalVows(state);
+  var settlements = {};
+  var carryEvents = {};
+
+  ordered.forEach(function (vow) {
+    var events = {};
+    var start = vow.start || dateUtils.dateKey();
+
+    Object.keys(carryEvents).forEach(function (date) {
+      addEvent(events, date < start ? start : date, carryEvents[date]);
+    });
+    addEvent(events, start, vow.opening);
+
+    Object.keys(state.days).sort().forEach(function (date) {
+      var day = state.days[date];
+      if (day.vowId === vow.id) addEvent(events, date < start ? start : date, daySummary(day).net);
+    });
+
+    var balance = 0;
+    var complete = false;
+    var completedAt = null;
+    var nextCarryEvents = {};
+
+    Object.keys(events).sort().forEach(function (date) {
+      var previousOverflow = Math.max(0, balance - vow.target);
+      balance = Math.max(0, balance + events[date]);
+      var nextOverflow = Math.max(0, balance - vow.target);
+      addEvent(nextCarryEvents, date, nextOverflow - previousOverflow);
+
+      if (balance >= vow.target) {
+        if (!complete) completedAt = date;
+        complete = true;
+      } else {
+        complete = false;
+        completedAt = null;
+      }
+    });
+
+    settlements[vow.id] = {
+      progress: Math.min(vow.target, balance),
+      overflow: Math.max(0, balance - vow.target),
+      complete: complete,
+      completedAt: complete ? completedAt : null
+    };
+    carryEvents = nextCarryEvents;
+  });
+
+  return { ordered: ordered, byId: settlements, carryEvents: carryEvents };
+}
+
 function vowProgress(state, vow) {
   if (!vow) return 0;
-  var progress = (Number(vow.opening) || 0) + Object.keys(state.days).reduce(function (sum, key) {
-    var day = state.days[key];
-    if (day.vowId !== vow.id) return sum;
-    var summary = daySummary(day);
-    return sum + summary.net;
-  }, 0);
-  return Math.max(0, progress);
+  var settlement = settleVows(state).byId[vow.id];
+  return settlement ? settlement.progress : 0;
 }
 
 function vowFaults(state, vow) {
@@ -143,7 +202,9 @@ function vowFaults(state, vow) {
 }
 
 function isVowComplete(state, vow) {
-  return Boolean(vow && (vow.completedAt || vowProgress(state, vow) >= Number(vow.target)));
+  if (!vow) return false;
+  var settlement = settleVows(state).byId[vow.id];
+  return Boolean(settlement && settlement.complete);
 }
 
 function activeVow(state) {
@@ -158,18 +219,31 @@ function latestVow(state) {
 
 function syncVowCompletions(state, promptForNext) {
   var completed = [];
-  state.vows.forEach(function (vow) {
-    if (!vow.completedAt && vowProgress(state, vow) >= vow.target) {
-      vow.completedAt = dateUtils.dateKey();
-      completed.push(vow);
-    }
+  var reopened = [];
+  var settlement = settleVows(state);
+
+  settlement.ordered.forEach(function (vow) {
+    var previousCompletedAt = vow.completedAt;
+    var result = settlement.byId[vow.id];
+    if (!previousCompletedAt && result.complete) completed.push(vow);
+    if (previousCompletedAt && !result.complete) reopened.push(vow);
+    vow.completedAt = result.completedAt;
   });
-  var selected = state.vows.find(function (vow) { return vow.id === state.activeVowId; });
-  if (selected && isVowComplete(state, selected)) {
-    state.activeVowId = null;
+
+  var selected = state.vows.find(function (vow) { return vow.id === state.activeVowId; }) || null;
+  if (reopened.length) {
+    state.activeVowId = reopened[0].id;
+  } else if (!selected || settlement.byId[selected.id].complete) {
+    var next = settlement.ordered.find(function (vow) { return !settlement.byId[vow.id].complete; });
+    state.activeVowId = next ? next.id : null;
   }
-  if (completed.length && promptForNext) state.pendingNextVow = true;
-  return completed;
+
+  if (reopened.length || state.activeVowId) {
+    state.pendingNextVow = false;
+  } else if (completed.length && promptForNext) {
+    state.pendingNextVow = true;
+  }
+  return { completed: completed, reopened: reopened };
 }
 
 function sortVows(state) {
@@ -225,6 +299,7 @@ module.exports = {
   saveState: saveState,
   pointSum: pointSum,
   daySummary: daySummary,
+  settleVows: settleVows,
   vowProgress: vowProgress,
   vowFaults: vowFaults,
   isVowComplete: isVowComplete,

@@ -1,5 +1,6 @@
 var tabSwipe = require('../../utils/tab-swipe').createHandlers(2);
 var store = require('../../utils/store');
+var storageFeedback = require('../../utils/storage-feedback');
 var dateUtils = require('../../utils/date');
 var share = require('../../utils/share');
 var entryHistory = require('../../utils/entry-history');
@@ -50,16 +51,18 @@ Page({
     share.showMenu(false);
     var tabBar = this.getTabBar && this.getTabBar();
     if (tabBar) tabBar.setData({ selected: 2, hidden: this.data.formVisible });
-    this.renderVows();
-    if (this.state && this.state.pendingNextVow) {
+    if (!this.renderVows()) return;
+    if (this.state && this.state.pendingNextVow && !this.data.formVisible) {
       this.openNewVow(true);
     }
   },
 
   onShareAppMessage: share.appMessage,
 
-  renderVows: function () {
-    var state = store.loadState();
+  renderVows: function (savedState) {
+    var page = this;
+    var state = savedState || storageFeedback.load(this, function () { page.onShow(); });
+    if (!state) return false;
     var current = store.activeVow(state);
     var expanded = this.expanded || {};
     var vows = store.sortVows(state).map(function (vow) {
@@ -83,7 +86,9 @@ Page({
     });
 
     this.state = state;
+    this._storageReadFailed = false;
     this.setData({ vows: vows, hasActiveVow: Boolean(current) });
+    return true;
   },
 
   toggleVow: function (event) {
@@ -95,17 +100,22 @@ Page({
 
   activateVow: function (event) {
     var id = event.currentTarget.dataset.id;
-    var state = this.state || store.loadState();
+    var page = this;
+    var state = storageFeedback.current(this, function () { page.activateVow(event); });
+    if (!state) return;
+    state = store.normalizeState(state);
     var vow = state.vows.find(function (item) { return item.id === id; });
     if (!vow || store.isVowComplete(state, vow)) return;
     state.activeVowId = id;
+    var result;
     try {
-      this.state = store.saveState(state, false).state;
-      this.renderVows();
-      wx.showToast({ title: '已设为当前善愿', icon: 'success' });
+      result = store.saveState(state, false);
     } catch (error) {
       wx.showModal({ title: '保存失败', content: '本机存储暂时不可用，请稍后再试。', showCancel: false });
+      return;
     }
+    this.renderVows(result.state);
+    wx.showToast({ title: '已设为当前善愿', icon: 'success' });
   },
 
   openNewVow: function (automatic) {
@@ -127,7 +137,9 @@ Page({
 
   openEditVow: function (event) {
     var id = event.currentTarget.dataset.id;
-    var state = this.state || store.loadState();
+    var page = this;
+    var state = storageFeedback.current(this, function () { page.openEditVow(event); });
+    if (!state) return;
     var vow = state.vows.find(function (item) { return item.id === id; });
     if (!vow || store.isVowComplete(state, vow)) {
       wx.showToast({ title: '满愿后不可调整', icon: 'none' });
@@ -152,8 +164,17 @@ Page({
 
   closeVowForm: function () {
     if (this.openedAutomatically && this.state && this.state.pendingNextVow) {
-      this.state.pendingNextVow = false;
-      try { this.state = store.saveState(this.state, false).state; } catch (error) {}
+      var page = this;
+      var state = storageFeedback.current(this, function () { page.closeVowForm(); });
+      if (!state) return;
+      state = store.normalizeState(state);
+      state.pendingNextVow = false;
+      try {
+        this.state = store.saveState(state, false).state;
+      } catch (error) {
+        wx.showModal({ title: '保存失败', content: '本机存储暂时不可用，请稍后再试。', showCancel: false });
+        return;
+      }
     }
     this.openedAutomatically = false;
     this.setTabBarHidden(false);
@@ -254,11 +275,14 @@ Page({
       return;
     }
     if (!target || target < 1 || target > 1000000) {
-      wx.showToast({ title: '目标善数须为正整数', icon: 'none' });
+      wx.showToast({ title: '目标功数须为正整数', icon: 'none' });
       return;
     }
 
-    var state = this.state || store.loadState();
+    var page = this;
+    var state = storageFeedback.current(this, function () { page.submitVow(); });
+    if (!state) return;
+    state = store.normalizeState(state);
     var updated = true;
     if (this.data.editingVowId) {
       updated = store.updateVow(state, this.data.editingVowId, { name: name, target: target, reason: reason });
@@ -272,22 +296,26 @@ Page({
       return;
     }
 
+    var result;
     try {
-      var result = store.saveState(state, true);
-      this.state = result.state;
-      this.openedAutomatically = false;
-      this.setTabBarHidden(false);
-      this.setData({ formVisible: false });
-      this.renderVows();
-      if (result.completed.length) {
-        var page = this;
+      result = store.saveState(state, true);
+    } catch (error) {
+      wx.showModal({ title: '保存失败', content: '本机存储暂时不可用，请稍后再试。', showCancel: false });
+      return;
+    }
+    this.openedAutomatically = false;
+    this.setTabBarHidden(false);
+    this.setData({ formVisible: false });
+    this.renderVows(result.state);
+    if (result.completed.length) {
+      if (result.state.pendingNextVow) {
         wx.showToast({ title: '善愿已满，立下一愿', icon: 'none', duration: 1600 });
         setTimeout(function () { page.openNewVow(true); }, 500);
       } else {
-        wx.showToast({ title: this.data.editingVowId ? '善愿已更新' : '新善愿已立', icon: 'success' });
+        wx.showToast({ title: '善愿已满，余功已顺延', icon: 'none', duration: 1800 });
       }
-    } catch (error) {
-      wx.showModal({ title: '保存失败', content: '本机存储暂时不可用，请稍后再试。', showCancel: false });
+    } else {
+      wx.showToast({ title: this.data.editingVowId ? '善愿已更新' : '新善愿已立', icon: 'success' });
     }
   },
 
@@ -302,12 +330,15 @@ Page({
         try {
           entryHistory.clear();
           wx.removeStorageSync(store.STORAGE_KEY);
-          page.expanded = {};
-          page.renderVows();
-          wx.showToast({ title: '本机记录已清空', icon: 'success' });
         } catch (error) {
           wx.showModal({ title: '清空失败', content: '请稍后再试。', showCancel: false });
+          return;
         }
+        page.expanded = {};
+        page.state = null;
+        page.setData({ vows: [], hasActiveVow: false });
+        page.renderVows();
+        wx.showToast({ title: '本机记录已清空', icon: 'success' });
       }
     });
   }

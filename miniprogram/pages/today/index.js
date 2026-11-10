@@ -1,5 +1,6 @@
 var tabSwipe = require('../../utils/tab-swipe').createHandlers(0);
 var store = require('../../utils/store');
+var storageFeedback = require('../../utils/storage-feedback');
 var dateUtils = require('../../utils/date');
 var share = require('../../utils/share');
 var entryHistory = require('../../utils/entry-history');
@@ -57,12 +58,52 @@ Page({
   },
 
   onLoad: function () {
-    var now = new Date();
+    this.setCurrentDate(new Date());
+  },
+
+  setCurrentDate: function (now) {
+    var value = now || new Date();
     this.setData({
-      dateKey: dateUtils.dateKey(now),
-      dateTitle: dateUtils.chineseMonthDay(now),
-      weekday: dateUtils.weekdayText(now)
+      dateKey: dateUtils.dateKey(value),
+      dateTitle: dateUtils.chineseMonthDay(value),
+      weekday: dateUtils.weekdayText(value)
     });
+  },
+
+  syncCurrentDate: function () {
+    var now = new Date();
+    var nextDateKey = dateUtils.dateKey(now);
+    if (!this.data.dateKey || this.data.dateKey === nextDateKey) return true;
+
+    if (!this.data.reflectionVisible) {
+      this.setCurrentDate(now);
+      return true;
+    }
+
+    if (this._crossDayPromptVisible) return false;
+    this._crossDayPromptVisible = true;
+    var page = this;
+    var nextDateTitle = dateUtils.chineseMonthDay(now);
+    wx.showModal({
+      title: '已进入新的一天',
+      content: '当前表单属于' + this.data.dateTitle + '。切换到' + nextDateTitle + '将关闭表单，未保存内容不会写入；也可以继续登记昨日。',
+      confirmText: '切换今日',
+      cancelText: '继续昨日',
+      success: function (result) {
+        page._crossDayPromptVisible = false;
+        if (result.confirm) {
+          page.setTabBarHidden(false);
+          page.setData({ reflectionVisible: false, entrySuggestions: { kind: '', key: '', items: [] } });
+          page.setCurrentDate(now);
+        }
+        page.renderPage();
+      },
+      fail: function () {
+        page._crossDayPromptVisible = false;
+        page.renderPage();
+      }
+    });
+    return false;
   },
 
   onShow: function () {
@@ -70,15 +111,17 @@ Page({
     share.showMenu(true);
     var tabBar = this.getTabBar && this.getTabBar();
     if (tabBar) tabBar.setData({ selected: 0, hidden: this.data.reflectionVisible });
-    this.renderPage();
+    if (this.syncCurrentDate()) this.renderPage();
   },
 
   onShareAppMessage: share.appMessage,
 
   onShareTimeline: share.timeline,
 
-  renderPage: function () {
-    var state = store.loadState();
+  renderPage: function (savedState) {
+    var page = this;
+    var state = savedState || storageFeedback.load(this, function () { page.renderPage(); });
+    if (!state) return;
     var vow = store.activeVow(state) || store.latestVow(state);
     var day = state.days[this.data.dateKey] || { goods: [], faults: [], completed: false };
     var summary = store.daySummary(day);
@@ -99,6 +142,7 @@ Page({
     }
 
     this.state = state;
+    this._storageReadFailed = false;
     this.setData({
       hasVow: Boolean(vow),
       vow: vowView,
@@ -118,7 +162,9 @@ Page({
   },
 
   startReflection: function () {
-    var state = store.loadState();
+    var page = this;
+    var state = storageFeedback.load(this, function () { page.startReflection(); });
+    if (!state) return;
     var day = state.days[this.data.dateKey];
     var active = store.activeVow(state);
     var goods = day && day.goods && day.goods.length ? cloneItems(day.goods) : [newItem()];
@@ -139,6 +185,10 @@ Page({
   closeReflection: function () {
     this.setTabBarHidden(false);
     this.setData({ reflectionVisible: false, entrySuggestions: { kind: '', key: '', items: [] } });
+    if (this.data.dateKey !== dateUtils.dateKey()) {
+      this.setCurrentDate(new Date());
+      this.renderPage();
+    }
   },
 
   setTabBarHidden: function (hidden) {
@@ -270,6 +320,7 @@ Page({
 
   submitReflection: function () {
     var draft = this.data.draft;
+    var submittedDateKey = this.data.dateKey;
     function clean(items) {
       return items.filter(function (item) { return item.text.trim(); }).map(function (item) {
         return {
@@ -279,7 +330,10 @@ Page({
       });
     }
 
-    var state = this.state || store.loadState();
+    var page = this;
+    var state = storageFeedback.current(this, function () { page.submitReflection(); });
+    if (!state) return;
+    state = store.normalizeState(state);
     state.days[this.data.dateKey] = {
       goods: clean(draft.goods),
       faults: clean(draft.faults),
@@ -287,23 +341,33 @@ Page({
       vowId: this.draftVowId || null
     };
 
+    var result;
     try {
-      var result = store.saveState(state, true);
-      this.state = result.state;
-      this.entryHistory = entryHistory.remember(this.entryHistory, this.editedHistoryDay());
-      this.setTabBarHidden(false);
-      this.setData({ reflectionVisible: false, entrySuggestions: { kind: '', key: '', items: [] } });
-      this.renderPage();
-      if (result.completed.length) {
+      result = store.saveState(state, true);
+    } catch (error) {
+      wx.showModal({ title: '保存失败', content: '本机存储暂时不可用，请稍后再试。', showCancel: false });
+      return;
+    }
+    this.state = result.state;
+    this.entryHistory = entryHistory.remember(this.entryHistory, this.editedHistoryDay());
+    this.setTabBarHidden(false);
+    this.setData({ reflectionVisible: false, entrySuggestions: { kind: '', key: '', items: [] } });
+    if (submittedDateKey !== dateUtils.dateKey()) this.setCurrentDate(new Date());
+    // 用已确认写入的状态刷新，避免保存后的读取异常被误报为保存失败。
+    this.renderPage(result.state);
+    if (result.reopened.length) {
+      wx.showToast({ title: '记录已更新，善愿进度已重算', icon: 'none', duration: 1800 });
+    } else if (result.completed.length) {
+      if (result.state.pendingNextVow) {
         wx.showToast({ title: '善愿已满，立下一愿', icon: 'none', duration: 1600 });
         setTimeout(function () {
           wx.switchTab({ url: '/pages/vows/index' });
         }, 700);
       } else {
-        wx.showToast({ title: '今日功过已登记', icon: 'success' });
+        wx.showToast({ title: '善愿已满，余功已顺延', icon: 'none', duration: 1800 });
       }
-    } catch (error) {
-      wx.showModal({ title: '保存失败', content: '本机存储暂时不可用，请稍后再试。', showCancel: false });
+    } else {
+      wx.showToast({ title: submittedDateKey === this.data.dateKey ? '今日功过已登记' : '昨日功过已登记', icon: 'success' });
     }
   }
 });
